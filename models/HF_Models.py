@@ -11,7 +11,7 @@ def initialize_evllm(temperature:0.3, model_id):
         top_k=10,
         top_p=0.95,
         temperature=temperature,
-        logits_processors=[processor.logits_processor]  # Integrating your logits processor
+        logits_processors=[processor]  # Integrating your logits processor
     )
 
     return llm
