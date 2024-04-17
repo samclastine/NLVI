@@ -1,4 +1,4 @@
-from models import initialize_evllm
+from models import EVLLMInitializer
 from Experiments import ex1a, ex1b
 import argparse
 import logging
@@ -14,7 +14,7 @@ def setup_arg_parser():
 
 
 def run_experiment(exp_name, result_filename, model_id):
-    llm = initialize_evllm(model_id=model_id, temperature=0.5)
+    llm = EVLLMInitializer(model_id=model_id, temperature=0.5)
     if exp_name=='ex1a':
         logging.info(f"Running {exp_name} with model {model_id}")
         ex1a.VegaLiteEvaluator(llm=llm, output_filename=result_filename)
