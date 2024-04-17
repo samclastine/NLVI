@@ -20,7 +20,7 @@ warnings.filterwarnings('ignore')
 
 class VegaLiteEvaluator_EX1A:
     def __init__(self, model_id, output_filename="/output.csv"):
-        self.llm = EVLLMInitializer(model_id=model_id, temperature=0.5)
+        self.model_id = model_id
         self.evaluator = GPTEvaluator()
         self.output_filename = output_filename
         self.visualization_template = """/
@@ -36,7 +36,7 @@ Vega-lite Json: """
     def visQA_chain(self, input):
         print("")
         try:
-            llm = EVLLMInitializer(model_id=model_id, temperature=0.5)
+            llm = EVLLMInitializer(model_id=self.model_id, temperature=0.5)
             memory = ConversationBufferWindowMemory(k=1)
             vis_chain = ConversationChain(llm=llm, prompt=self.VIS_CHAIN_PROMPT, verbose=True, memory=memory)
             result = vis_chain.predict(input=input)
