@@ -20,7 +20,7 @@ warnings.filterwarnings('ignore')
 
 class VegaLiteEvaluator_EX1A:
     def __init__(self, model_id, output_filename="/output.csv"):
-        self.llm = llm = EVLLMInitializer(model_id=model_id, temperature=0.5)
+        self.llm = EVLLMInitializer(model_id=model_id, temperature=0.5)
         self.evaluator = GPTEvaluator()
         self.output_filename = output_filename
         self.visualization_template = """/
