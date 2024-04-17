@@ -49,7 +49,7 @@ Vega-lite Json: """
             print("predicted", predicted)
             try:
                 pred = predicted
-                pred = predicted.replace('true', 'True')
+                # pred = predicted.replace('true', 'True')
             except (SyntaxError, ValueError) as e:
                 print("Invalid prediction", e)
                 eval_result = {
@@ -149,7 +149,7 @@ Vega-lite Json: """
             query = row['query']
             vlSpec_output = row['vlSpec_output']
             Datafile = row['Datafile']
-            vlSpec_output = vlSpec_output.replace('true', 'True')
-            vlSpec_output = vlSpec_output.replace("'", '"')
+            # vlSpec_output = vlSpec_output.replace('true', 'True')
+            # vlSpec_output = vlSpec_output.replace("'", '"')
             self.generate(query, Datafile, vlSpec_output)
         return "Evaluation Process Completed!!!"

@@ -3,6 +3,7 @@ from Experiments import VegaLiteEvaluator_EX1A
 import argparse
 import logging
 import warnings
+import pandas as pd
 
 warnings.filterwarnings('ignore')
 
@@ -16,11 +17,12 @@ def setup_arg_parser():
 
 def run_experiment(exp_name, result_filename, model_id):
     llm = EVLLMInitializer(model_id=model_id, temperature=0.5)
-    print(llm)
     if exp_name=='ex1a':
-        print("hahahaha")
         logging.info(f"Running {exp_name} with model {model_id}")
-        VegaLiteEvaluator_EX1A(llm=llm, output_filename=result_filename)
+        evaluator = VegaLiteEvaluator_EX1A(llm=llm, output_filename=result_filename)
+        queries_df = pd.read_csv('/content/drive/MyDrive/final_project/data/final_vl_data.csv')
+        result = evaluator.run_evaluation(queries_df)
+        print(result)
     if exp_name=='ex1b':
         logging.info(f"Running {exp_name} with model {model_id}")
         VegaLiteEvaluator_EX1A(llm=llm, output_filename=result_filename)
