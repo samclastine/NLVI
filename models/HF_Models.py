@@ -1,10 +1,12 @@
 from VLLM import EVLLM
 from logits import create_processor_logit
-
+import torch
 
 def initialize_evllm(temperature:0.3, model_id):
     processor = create_processor_logit(model_id=model_id)
     # Initialize the EVLLM with specific configurations
+    del llm
+    torch.cuda.empty_cache()
     llm = EVLLM(
         model=model_id,
         trust_remote_code=True,  # Mandatory for models from Hugging Face, etc.
