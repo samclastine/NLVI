@@ -36,8 +36,9 @@ Vega-lite Json: """
     def visQA_chain(self, input):
         print("")
         try:
+            llm = EVLLMInitializer(model_id=model_id, temperature=0.5)
             memory = ConversationBufferWindowMemory(k=1)
-            vis_chain = ConversationChain(llm=self.llm, prompt=self.VIS_CHAIN_PROMPT, verbose=True, memory=memory)
+            vis_chain = ConversationChain(llm=llm, prompt=self.VIS_CHAIN_PROMPT, verbose=True, memory=memory)
             result = vis_chain.predict(input=input)
         except (SyntaxError, ValueError) as e:
             print(f"Error in visQA chain func: {str(e)}")
