@@ -66,9 +66,10 @@ class ProcessorLogit:
         self.model_id = model_id
         llm = vllm.LLM(model=model_id)
         self.tokenizer_data = build_vllm_token_enforcer_tokenizer_data(llm)
+
+        self.logits_processor = build_vllm_logits_processor(self.tokenizer_data, JsonSchemaParser(VegaLiteSchema.schema()))
         del llm
         torch.cuda.empty_cache()
-        self.logits_processor = build_vllm_logits_processor(self.tokenizer_data, JsonSchemaParser(VegaLiteSchema.schema()))
 
 
 
