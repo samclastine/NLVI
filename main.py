@@ -1,4 +1,4 @@
-from models.HF_Models import initialize_evllm
+from models import initialize_evllm
 from Experiments import ex1a, ex1b
 import argparse
 import logging
