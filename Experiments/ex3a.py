@@ -22,6 +22,13 @@ from langchain.prompts import (
 )
 from Evaluator import Bleu_1_score, bleu_2_score, rouge_1_score, rouge_2_score, GPTEvaluator, JSONComparator
 import urllib
+from langchain.prompts.example_selector import SemanticSimilarityExampleSelector
+from langchain.vectorstores import Chroma
+from langchain.embeddings import OpenAIEmbeddings
+from langchain.prompts import FewShotPromptTemplate, PromptTemplate
+from langchain.chains import ConversationalRetrievalChain
+
+
 warnings.filterwarnings('ignore')
 
 
@@ -45,6 +52,15 @@ class VegaLiteEvaluator:
         self.output_filename = output_filename
         self.results = []
         self.prompt = PromptTemplate(input_variables=["question", "output"], template= """Here are some example:\nQuestion: {question}\nVEGALITE JSON: {output}""")
+        self.selector = SemanticSimilarityExampleSelector.from_examples(examples, OpenAIEmbeddings(), FAISS, k=1)
+        self.FewShotPrompt = FewShotPromptTemplate(
+            example_selector=self.selector,
+            example_prompt=self.prompt,
+            prefix="""The output should be only in Vegalite v4 JSON""",
+            suffix="""Previous Conversation:{chat_history}\nData:\n{context}\nInput: {question}\nVegaLite-JSON:""",
+            input_variables=["context","question","chat_history"],
+        )
+
         self.shots = [
     {"question": "Please show me how many employees working on different countries using a bar chart, could you list from high to low by the bars?", "output": """{{"$schema": "https://vega.github.io/schema/vega-lite/v4.json", "description": "Number of Employees by Country", "data": {{"url":"https://example.com/data/employees.json"}}, "mark": "bar", "encoding": {{"x": {{"field": "employees", "type": "quantitative", "axis": {{"title": "Number of Employees"}} }}, "y": {{"field": "country", "type": "nominal", "axis": {{"title": "Country"}}, "sort": "-x"  }} }} }}"""},
     {"question": "plot a line chart on what is the average number of attendance at home games for each year?", "output": """{{"$schema": "https://vega.github.io/schema/vega-lite/v4.json", "description": "Average Attendance at Home Games by Year", "data": {{"url":"https://example.com/data/games.json"}}, "mark": "line", "encoding": {{"x": {{"field": "year", "type": "ordinal", "axis": {{"title": "Year"}}}} }}}}, "y": {{"field": "average_attendance", "type": "quantitative", "axis": {{"title": "Average Attendance"}}}} }}}} }}}} }}}}"""},
@@ -72,14 +88,15 @@ class VegaLiteEvaluator:
                 input_key="question"
             )
             
-            vis_chain = RetrievalQA.from_chain_type(
+            vis_chain = ConversationalRetrievalChain.from_llm(
                 self.llm,
                 retriever=csv_retriever,
-                chain_type="stuff",
-                chain_type_kwargs={"prompt": self.VIS_CHAIN_PROMPT,"verbose":False,"memory": memory}
+                combine_docs_chain_kwargs={"prompt": self.FewShotPrompt},
+                memory=memory,
+                verbose=True
             )
-            result = vis_chain({"query": input})
-            result = result["result"]
+            result = vis_chain({"question": input})
+            result = result["answer"]
             return result
         except(SyntaxError, ValueError) as e:
             print(f"Error in visQA chain func: {str(e)}")
@@ -89,7 +106,7 @@ class VegaLiteEvaluator:
         try:
             predicted = self.visQA_chain(dataFile,query)
             try:
-                pred = predicted
+                # pred = predicted
                 pred = predicted.replace('true', 'True')
             except (SyntaxError, ValueError) as e:
                 print("Invalid prediction", e)
@@ -184,15 +201,13 @@ class VegaLiteEvaluator:
             result_df.to_csv(self.output_filename, index=False)
 
     def run_evaluation(self, queries_df):
-        for t in self.temperatures:
-            
-            for index, row in queries_df.iterrows():
-                if index == 50:
-                    break
-                query = row['query']
-                vlSpec_output = row['vlSpec_output']
-                Datafile = row['Datafile']
-                vlSpec_output = vlSpec_output.replace('true', 'True')
-                vlSpec_output = vlSpec_output.replace("'", '"')
-                self.generate(query, Datafile, vlSpec_output)
+        for index, row in queries_df.iterrows():
+            if index == 50:
+                break
+            query = row['query']
+            vlSpec_output = row['vlSpec_output']
+            Datafile = row['Datafile']
+            vlSpec_output = vlSpec_output.replace('true', 'True')
+            vlSpec_output = vlSpec_output.replace("'", '"')
+            self.generate(query, Datafile, vlSpec_output)
         return "Evaluation Process Completed!!!"

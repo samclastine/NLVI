@@ -1,0 +1,9 @@
+vllm==0.4.0.post1
+langchain-community==0.0.32
+langchain-core==0.1.42
+lm-format-enforcer==0.9.3
+torch==2.1.2
+pydantic==2.6.4
+langchain
+openai
+rouge-score
