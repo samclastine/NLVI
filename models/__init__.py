@@ -1,1 +1,1 @@
-from HF_Models import initialize_evllm
+from HF_Models import EVLLMInitializer
