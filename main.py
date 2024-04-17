@@ -7,7 +7,7 @@ import logging
 
 def setup_arg_parser():
     parser = argparse.ArgumentParser(description="Run experiments for data evaluation")
-    parser.add_argument('--exp', type=int, help='Experiment number (1-8)')
+    parser.add_argument('--exp', type=str, help='Experiment identifier (e.g., ex1a, ex1b)')
     parser.add_argument('--output', type=str, help='Output CSV file name')
     parser.add_argument('--modelID', type=str, help='Model identifier')
     return parser
