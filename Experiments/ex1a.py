@@ -17,7 +17,7 @@ from Evaluator import Bleu_1_score, bleu_2_score, rouge_1_score, rouge_2_score, 
 
 warnings.filterwarnings('ignore')
 
-class VegaLiteEvaluator:
+class VegaLiteEvaluator_EX1A:
     def __init__(self, llm, output_filename="/output.csv"):
         self.llm = llm
         self.evaluator = GPTEvaluator()
@@ -33,7 +33,7 @@ Vega-lite Json: """
         self.results = []
 
     def visQA_chain(self, input):
-        print("Evaluation Started")
+        print("")
         try:
             memory = ConversationBufferWindowMemory(k=1)
             vis_chain = ConversationChain(llm=self.llm, prompt=self.VIS_CHAIN_PROMPT, verbose=True, memory=memory)

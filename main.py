@@ -1,5 +1,5 @@
 from models import EVLLMInitializer
-from Experiments import ex1a, ex1b
+from Experiments import VegaLiteEvaluator_EX1A
 import argparse
 import logging
 import warnings
@@ -20,10 +20,10 @@ def run_experiment(exp_name, result_filename, model_id):
     if exp_name=='ex1a':
         print("hahahaha")
         logging.info(f"Running {exp_name} with model {model_id}")
-        ex1a.VegaLiteEvaluator(llm=llm, output_filename=result_filename)
+        VegaLiteEvaluator_EX1A(llm=llm, output_filename=result_filename)
     if exp_name=='ex1b':
         logging.info(f"Running {exp_name} with model {model_id}")
-        ex1a.VegaLiteEvaluator(llm=llm, output_filename=result_filename)
+        VegaLiteEvaluator_EX1A(llm=llm, output_filename=result_filename)
         
 
 
