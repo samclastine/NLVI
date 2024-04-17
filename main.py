@@ -1,4 +1,3 @@
-from models import EVLLMInitializer
 from Experiments import VegaLiteEvaluator_EX1A
 import argparse
 import logging

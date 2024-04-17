@@ -13,7 +13,7 @@ from langchain.prompts import (
 )
 from Evaluator import Bleu_1_score, bleu_2_score, rouge_1_score, rouge_2_score, GPTEvaluator, JSONComparator
 
-from models import EVLLMInitializer
+from models import initialize_evllm
 
 
 warnings.filterwarnings('ignore')
@@ -36,7 +36,7 @@ Vega-lite Json: """
     def visQA_chain(self, input):
         print("")
         try:
-            llm = EVLLMInitializer(model_id=self.model_id, temperature=0.5)
+            llm = initialize_evllm(model_id=self.model_id, temperature=0.5)
             memory = ConversationBufferWindowMemory(k=1)
             vis_chain = ConversationChain(llm=llm, prompt=self.VIS_CHAIN_PROMPT, verbose=True, memory=memory)
             result = vis_chain.predict(input=input)
