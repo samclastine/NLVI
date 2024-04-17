@@ -4,6 +4,9 @@ from lmformatenforcer import JsonSchemaParser
 import vllm
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional, Union
+import warnings
+
+warnings.filterwarnings('ignore')
 
 class DataSource(BaseModel):
     url: str

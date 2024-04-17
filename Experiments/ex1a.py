@@ -33,6 +33,7 @@ Vega-lite Json: """
         self.results = []
 
     def visQA_chain(self, input):
+        print("Evaluation Started")
         try:
             memory = ConversationBufferWindowMemory(k=1)
             vis_chain = ConversationChain(llm=self.llm, prompt=self.VIS_CHAIN_PROMPT, verbose=True, memory=memory)

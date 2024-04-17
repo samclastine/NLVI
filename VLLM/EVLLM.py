@@ -7,7 +7,9 @@ from langchain_core.pydantic_v1 import Field, root_validator
 
 from langchain_community.llms.openai import BaseOpenAI
 from langchain_community.utils.openai import is_openai_v1
+import warnings
 
+warnings.filterwarnings('ignore')
 
 class EVLLM(BaseLLM):
     """VLLM language model."""

@@ -1,7 +1,9 @@
 
 from VLLM import EVLLM
 from logits import create_processor_logit
+import warnings
 
+warnings.filterwarnings('ignore')
 class EVLLMInitializer:
     def __init__(self, model_id, temperature=0.3):
         """
