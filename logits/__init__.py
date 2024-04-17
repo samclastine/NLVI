@@ -1,1 +1,1 @@
-from .logits_processor import create_processor_logit
+from .logits_processor import create_logits_processor

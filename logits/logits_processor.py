@@ -6,8 +6,10 @@ from pydantic import BaseModel
 from typing import List, Dict, Any, Optional, Union
 import warnings
 
+# Suppress warnings, if necessary
 warnings.filterwarnings('ignore')
 
+# Define the schema classes using Pydantic
 class DataSource(BaseModel):
     url: str
 
@@ -50,32 +52,28 @@ class VegaLiteSchema(BaseModel):
     encoding: Encoding
     transform: Optional[List[Transform]] = None
 
-
+# Function to delete model and clear CUDA cache
 def delete_llm(model_initialized_var):
-    """
-    Function to delete Long-Long Memory (LLM) by emptying the CUDA memory cache.
-    """
     del model_initialized_var
     torch.cuda.empty_cache()
 
-class ProcessorLogit:
-    def __init__(self, model_id):
-        """
-        Initialize ProcessorLogit with the provided model ID.
-        """
-        self.model_id = model_id
-        llm = vllm.LLM(model=model_id)
-        self.tokenizer_data = build_vllm_token_enforcer_tokenizer_data(llm)
-
-        self.logits_processor = build_vllm_logits_processor(self.tokenizer_data, JsonSchemaParser(VegaLiteSchema.schema()))
-        del llm
-        torch.cuda.empty_cache()
-
-
-
-
-def create_processor_logit(model_id):
+# Function to create and return the logits processor
+def create_logits_processor(model_id):
     """
-    Function to create and return an instance of ProcessorLogit.
+    Create and return the logits processor using the given model ID.
     """
-    return ProcessorLogit(model_id)
+    # Initialize the LLM with the given model ID
+    llm = vllm.LLM(model=model_id)
+    
+    # Build the tokenizer data for enforcing token constraints
+    tokenizer_data = build_vllm_token_enforcer_tokenizer_data(llm)
+
+    # Delete the LLM instance to free up resources
+    delete_llm(llm)
+
+    # Build the logits processor using the tokenizer data and a JSON schema parser
+    logits_processor = build_vllm_logits_processor(tokenizer_data, JsonSchemaParser(VegaLiteSchema.schema()))
+
+    return logits_processor
+
+# This function can now be used to get a logits processor which can then be integrated into further processing steps.
