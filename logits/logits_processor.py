@@ -63,7 +63,7 @@ def create_logits_processor(model_id):
     Create and return the logits processor using the given model ID.
     """
     # Initialize the LLM with the given model ID
-    llm = vllm.LLM(model=model_id, download_dir="/models/saved")
+    llm = vllm.LLM(model=model_id, download_dir="/content/NLVI/models/saved")
     
     # Build the tokenizer data for enforcing token constraints
     tokenizer_data = build_vllm_token_enforcer_tokenizer_data(llm)
@@ -72,8 +72,7 @@ def create_logits_processor(model_id):
     del llm
     gc.collect()
     torch.cuda.empty_cache()
-    torch.distributed.destroy_process_group()
-    print("Successfully delete the llm pipeline and free the GPU memory!")
+    print("Successfully deleted the llm and free the GPU memory!")
 
     # Build the logits processor using the tokenizer data and a JSON schema parser
     logits_processor = build_vllm_logits_processor(tokenizer_data, JsonSchemaParser(VegaLiteSchema.schema()))
