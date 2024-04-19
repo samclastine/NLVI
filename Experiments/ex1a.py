@@ -82,7 +82,7 @@ Vega-lite Json: """
                 eval_result = None
                 _error = None
                 try:
-                    pred_json = json.loads(pred)[0]
+                    pred_json = json.loads(pred)
                     pred_json['data'].clear()
                     pred_json['data']['url'] = 'https://raw.githubusercontent.com/nl4dv/nl4dv/master/examples/assets/data/' + dataFile
                     truth_json = ast.literal_eval(truth)
