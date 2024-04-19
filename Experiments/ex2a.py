@@ -23,13 +23,13 @@ from langchain.prompts import (
 from Evaluator import Bleu_1_score, bleu_2_score, rouge_1_score, rouge_2_score, GPTEvaluator, JSONComparator
 import urllib
 warnings.filterwarnings('ignore')
-
+from models import initialize_evllm
 
 
 
 class VegaLiteEvaluator:
-    def __init__(self, llm, output_filename="/output.csv"):
-        self.llm = llm
+    def __init__(self, model_id, output_filename="/output.csv"):
+        self.model_id = model_id
         self.evaluator = GPTEvaluator()
         self.output_filename = output_filename
         self.visualization_template = """/
@@ -42,6 +42,7 @@ Vega-lite Json: """
         self.VIS_CHAIN_PROMPT = PromptTemplate(input_variables=["history", "input"], template=self.visualization_template)
         self.results = []
         self.temperatures = [0, 0.3, 0.7, 1]
+        self.llm = initialize_evllm(model_id= self.model_id, temperature=0.5)
     def visQA_chain(self, dataFile, input):
         try:
             urllib.request.urlretrieve('https://raw.githubusercontent.com/nl4dv/nl4dv/master/examples/assets/data/' + dataFile, dataFile)
@@ -93,10 +94,15 @@ Vega-lite Json: """
             print("Predicted JSON:", pred)
             print("Truth JSON:", truth)
 
+            if dataFile == "superstore":
+                data_url = "https://raw.githubusercontent.com/nl4dv/nl4dv/master/examples/assets/data/" + dataFile + ".csv"
+            else:
+                data_url = "https://raw.githubusercontent.com/nlvcorpus/nlvcorpus.github.io/main/datasets/" + dataFile + ".csv"
+
             try:
                 truth_json = json.loads(truth)
                 truth_json['data'].clear()
-                truth_json['data']['url'] = 'https://raw.githubusercontent.com/nl4dv/nl4dv/master/examples/assets/data/' + dataFile
+                truth_json['data']['url'] = data_url
                 truth_str = json.dumps(truth_json)
             except (SyntaxError, ValueError) as e:
                 print(f"Error parsing JSON: {str(e)}")
@@ -106,9 +112,9 @@ Vega-lite Json: """
                 eval_result = None
                 _error = None
                 try:
-                    pred_json = json.loads(pred)[0]
+                    pred_json = json.loads(pred)
                     pred_json['data'].clear()
-                    pred_json['data']['url'] = 'https://raw.githubusercontent.com/nl4dv/nl4dv/master/examples/assets/data/' + dataFile
+                    pred_json['data']['url'] = data_url
                     truth_json = ast.literal_eval(truth)
 
                     pred_str = json.dumps(pred_json)
@@ -171,14 +177,15 @@ Vega-lite Json: """
 
     def run_evaluation(self, queries_df):
         for t in self.temperatures:
+            self.llm = initialize_evllm(model_id= self.model_id, temperature=t)
             
             for index, row in queries_df.iterrows():
-                # if index == 50:
-                #     break
-                query = row['query']
-                vlSpec_output = row['vlSpec_output']
-                Datafile = row['Datafile']
-                vlSpec_output = vlSpec_output.replace('true', 'True')
-                vlSpec_output = vlSpec_output.replace("'", '"')
+                if index == 2:
+                    break
+                query = row['Utterance Set']
+                vlSpec_output = row['VegaLiteSpec']
+                Datafile = row['dataset'].lower()
+                # vlSpec_output = vlSpec_output.replace('true', 'True')
+                # vlSpec_output = vlSpec_output.replace("'", '"')
                 self.generate(query, Datafile, vlSpec_output)
         return "Evaluation Process Completed!!!"

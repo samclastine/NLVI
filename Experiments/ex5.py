@@ -24,14 +24,15 @@ from Evaluator import Bleu_1_score, bleu_2_score, rouge_1_score, rouge_2_score, 
 import urllib
 warnings.filterwarnings('ignore')
 
-
+from models import initialize_evllm
 
 
 class VegaLiteEvaluator:
-    def __init__(self, llm, output_filename="/output.csv"):
-        self.llm = llm
+    def __init__(self, model_id, output_filename="/output.csv"):
+        self.model_id = model_id
         self.evaluator = GPTEvaluator()
         self.output_filename = output_filename
+        self.llm = initialize_evllm(model_id= self.model_id, temperature=0.5)
         self.visualization_template =  """/
             You will act as an expert in data visualization and respond with Vega-Lite v4 JSON only. \
             You will follow these steps:
@@ -90,7 +91,6 @@ class VegaLiteEvaluator:
             predicted = self.visQA_chain(dataFile,query)
             try:
                 pred = predicted
-                pred = predicted.replace('true', 'True')
             except (SyntaxError, ValueError) as e:
                 print("Invalid prediction", e)
                 eval_result = {
@@ -106,11 +106,15 @@ class VegaLiteEvaluator:
             # Print the JSON strings for debugging
             print("Predicted JSON:", pred)
             print("Truth JSON:", truth)
+            if dataFile == "superstore":
+                data_url = "https://raw.githubusercontent.com/nl4dv/nl4dv/master/examples/assets/data/" + dataFile + ".csv"
+            else:
+                data_url = "https://raw.githubusercontent.com/nlvcorpus/nlvcorpus.github.io/main/datasets/" + dataFile + ".csv"
 
             try:
                 truth_json = json.loads(truth)
                 truth_json['data'].clear()
-                truth_json['data']['url'] = 'https://raw.githubusercontent.com/nl4dv/nl4dv/master/examples/assets/data/' + dataFile
+                truth_json['data']['url'] = data_url
                 truth_str = json.dumps(truth_json)
             except (SyntaxError, ValueError) as e:
                 print(f"Error parsing JSON: {str(e)}")
@@ -120,9 +124,9 @@ class VegaLiteEvaluator:
                 eval_result = None
                 _error = None
                 try:
-                    pred_json = json.loads(pred)[0]
+                    pred_json = json.loads(pred)
                     pred_json['data'].clear()
-                    pred_json['data']['url'] = 'https://raw.githubusercontent.com/nl4dv/nl4dv/master/examples/assets/data/' + dataFile
+                    pred_json['data']['url'] = data_url
                     truth_json = ast.literal_eval(truth)
 
                     pred_str = json.dumps(pred_json)
@@ -185,12 +189,10 @@ class VegaLiteEvaluator:
 
     def run_evaluation(self, queries_df):
         for index, row in queries_df.iterrows():
-            if index == 50:
-                break
-            query = row['query']
-            vlSpec_output = row['vlSpec_output']
-            Datafile = row['Datafile']
-            vlSpec_output = vlSpec_output.replace('true', 'True')
-            vlSpec_output = vlSpec_output.replace("'", '"')
+            # if index == 50:
+            #     break
+            query = row['Utterance Set']
+            vlSpec_output = row['VegaLiteSpec']
+            Datafile = row['dataset'].lower()
             self.generate(query, Datafile, vlSpec_output)
         return "Evaluation Process Completed!!!"

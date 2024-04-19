@@ -32,7 +32,7 @@ Question: {input}
 Vega-lite Json: """
         self.VIS_CHAIN_PROMPT = PromptTemplate(input_variables=["history", "input"], template=self.visualization_template)
         self.results = []
-        self.llm = initialize_evllm(model_id=self.model_id, temperature=0.5)
+        self.llm = initialize_evllm(model_id=self.model_id, temperature=0)
 
     def visQA_chain(self, input):
         print("")

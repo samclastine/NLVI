@@ -28,7 +28,7 @@ from langchain.embeddings import OpenAIEmbeddings
 from langchain.prompts import FewShotPromptTemplate, PromptTemplate
 from langchain.chains import ConversationalRetrievalChain
 
-
+from models import initialize_evllm
 warnings.filterwarnings('ignore')
 
 
@@ -46,8 +46,8 @@ examples = [
     ]
 
 class VegaLiteEvaluator:
-    def __init__(self, llm, output_filename="/output.csv"):
-        self.llm = llm
+    def __init__(self, model_id, output_filename="/output.csv"):
+        self.model_id = model_id
         self.evaluator = GPTEvaluator()
         self.output_filename = output_filename
         self.results = []
@@ -71,6 +71,7 @@ class VegaLiteEvaluator:
     {"question": "Annual Weather Heatmap", "output": """{{ "$schema": "https://vega.github.io/schema/vega-lite/v4.json", "data": {{ "url": "data/seattle-weather.csv" }}, "title": "Daily Max Temperatures (C) in Seattle, WA", "config": {{ "view": {{ "strokeWidth": 0, "step": 13 }}, "axis": {{ "domain": false }} }}, "mark": "rect", "encoding": {{ "x": {{ "field": "date", "timeUnit": "date", "type": "ordinal", "title": "Day", "axis": {{ "labelAngle": 0, "format": "%e" }} }}, "y": {{ "field": "date", "timeUnit": "month", "type": "ordinal", "title": "Month" }}, "color": {{ "field": "temp_max", "aggregate": "max", "type": "quantitative", "legend": {{ "title": null }} }} }}``"""},
     {"question": "Visualize the relationships between various measurements of penguin features (parallel coordinate plot)" , "output": """{{ "$schema": "https://vega.github.io/schema/vega-lite/v4.json", "description": "Though Vega-Lite supports only one scale per axes, one can create a parallel coordinate plot by folding variables, using `joinaggregate` to normalize their values and using ticks and rules to manually create axes.", "data": {{ "url": "data/penguins.json" }}, "width": 600, "height": 300, "transform": [ {{"filter": "datum['Beak Length (mm)']"}}, {{"window": [{{"op": "count", "as": "index"}}]}}, {{"fold": ["Beak Length (mm)", "Beak Depth (mm)", "Flipper Length (mm)", "Body Mass (g)"]}}, {{ "joinaggregate": [ {{"op": "min", "field": "value", "as": "min"}}, {{"op": "max", "field": "value", "as": "max"}} ], "groupby": ["key"] }}, {{ "calculate": "(datum.value - datum.min) / (datum.max-datum.min)", "as": "norm_val" }}, {{ "calculate": "(datum.min + datum.max) / 2", "as": "mid" }} ], "layer": [{{ "mark": {{"type": "rule", "color": "#ccc"}}, "encoding": {{ "detail": {{"aggregate": "count"}}, "x": {{"field": "key"}} }} }}, {{ "mark": "line", "encoding": {{ "color": {{"type": "nominal", "field": "Species"}}, "detail": {{"type": "nominal", "field": "index"}}, "opacity": {{"value": 0.3}}, "x": {{"type": "nominal", "field": "key"}}, "y": {{"type": "quantitative", "field": "norm_val", "axis": null}}, "tooltip": [{{ "type": "quantitative", "field": "Beak Length (mm)" }}, {{ "type": "quantitative", "field": "Beak Depth (mm)" }}, {{ "type": "quantitative", "field": "Flipper Length (mm)" }}, {{ "type": "quantitative", "field": "Body Mass (g)" }}] }} }}, {{ "encoding": {{ "x": {{"type": "nominal", "field": "key"}}, "y": {{"value": 0}} }}, "layer": [{{ "mark": {{"type": "text", "style": "label"}}, "encoding": {{ "text": {{"aggregate": "max", "field": "max"}} }} }}, {{ "mark": {{"type": "tick", "style": "tick", "size": 8, "color": "#ccc"}} }}] }}, {{ "encoding": {{ "x": {{"type": "nominal", "field": "key"}}, "y": {{"value": 150}} }}, "layer": [{{ "mark": {{"type": "text", "style": "label"}}, "encoding": {{ "text": {{"aggregate": "min", "field": "mid"}} }} }}, {{ "mark": {{"type": "tick", "style": "tick", "size": 8, "color": "#ccc"}} }}] }}, {{ "encoding": {{ "x": {{"type": "nominal", "field": "key"}}, "y": {{"value": 300}} }}, "layer": [{{ "mark": {{"type": "text", "style": "label"}}, "encoding": {{ "text": {{"aggregate": "min", "field": "min"}} }} }}, {{ "mark": {{"type": "tick", "style": "tick", "size": 8, "color": "#ccc"}} }}] }}], "config": {{ "axisX": {{"domain": false, "labelAngle": 0, "tickColor": "#ccc", "title": null}}, "view": {{"stroke": null}}, "style": {{ "label": {{"baseline": "middle", "align": "right", "dx": -5}}, "tick": {{"orient": "horizontal"}} }} }} }}"""}
     ]
+        self.llm = initialize_evllm(model_id= self.model_id, temperature=0.5)
         
     def visQA_chain(self, dataFile, input):
         try:
@@ -123,11 +124,15 @@ class VegaLiteEvaluator:
             # Print the JSON strings for debugging
             print("Predicted JSON:", pred)
             print("Truth JSON:", truth)
+            if dataFile == "superstore":
+                data_url = "https://raw.githubusercontent.com/nl4dv/nl4dv/master/examples/assets/data/" + dataFile + ".csv"
+            else:
+                data_url = "https://raw.githubusercontent.com/nlvcorpus/nlvcorpus.github.io/main/datasets/" + dataFile + ".csv"
 
             try:
                 truth_json = json.loads(truth)
                 truth_json['data'].clear()
-                truth_json['data']['url'] = 'https://raw.githubusercontent.com/nl4dv/nl4dv/master/examples/assets/data/' + dataFile
+                truth_json['data']['url'] = data_url
                 truth_str = json.dumps(truth_json)
             except (SyntaxError, ValueError) as e:
                 print(f"Error parsing JSON: {str(e)}")
@@ -139,7 +144,7 @@ class VegaLiteEvaluator:
                 try:
                     pred_json = json.loads(pred)[0]
                     pred_json['data'].clear()
-                    pred_json['data']['url'] = 'https://raw.githubusercontent.com/nl4dv/nl4dv/master/examples/assets/data/' + dataFile
+                    pred_json['data']['url'] = data_url
                     truth_json = ast.literal_eval(truth)
 
                     pred_str = json.dumps(pred_json)
@@ -204,10 +209,8 @@ class VegaLiteEvaluator:
         for index, row in queries_df.iterrows():
             # if index == 50:
             #     break
-            query = row['query']
-            vlSpec_output = row['vlSpec_output']
-            Datafile = row['Datafile']
-            vlSpec_output = vlSpec_output.replace('true', 'True')
-            vlSpec_output = vlSpec_output.replace("'", '"')
+            query = row['Utterance Set']
+            vlSpec_output = row['VegaLiteSpec']
+            Datafile = row['dataset'].lower()
             self.generate(query, Datafile, vlSpec_output)
         return "Evaluation Process Completed!!!"
