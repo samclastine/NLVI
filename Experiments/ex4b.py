@@ -128,15 +128,10 @@ class VegaLiteEvaluator_EX4B:
             print("Predicted JSON:", pred)
             print("Truth JSON:", truth)
 
-            if dataFile == "superstore":
-                data_url = "https://raw.githubusercontent.com/nl4dv/nl4dv/master/examples/assets/data/" + dataFile + ".csv"
-            else:
-                data_url = "https://raw.githubusercontent.com/nlvcorpus/nlvcorpus.github.io/main/datasets/" + dataFile + ".csv"
-
             try:
                 truth_json = json.loads(truth)
                 truth_json['data'].clear()
-                truth_json['data']['url'] = data_url
+                truth_json['data']['url'] = self.data_url
                 truth_str = json.dumps(truth_json)
             except (SyntaxError, ValueError) as e:
                 print(f"Error parsing JSON: {str(e)}")
@@ -148,7 +143,7 @@ class VegaLiteEvaluator_EX4B:
                 try:
                     pred_json = json.loads(pred)
                     pred_json['data'].clear()
-                    pred_json['data']['url'] = data_url
+                    pred_json['data']['url'] = self.data_url
                     truth_json = ast.literal_eval(truth)
 
                     pred_str = json.dumps(pred_json)
