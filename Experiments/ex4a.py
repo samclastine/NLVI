@@ -27,7 +27,7 @@ from models import initialize_evllm
 
 
 
-class VegaLiteEvaluator:
+class VegaLiteEvaluator_EX4A:
     def __init__(self, model_id, output_filename="/output.csv"):
         self.model_id = model_id
         self.evaluator = GPTEvaluator()

@@ -28,7 +28,7 @@ from models import initialize_evllm
 
 
 
-class VegaLiteEvaluator:
+class VegaLiteEvaluator_EX1B:
     def __init__(self, model_id, output_filename="/output.csv"):
         self.model_id = model_id
         self.llm = initialize_evllm(model_id= self.model_id, temperature=0)

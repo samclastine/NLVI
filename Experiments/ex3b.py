@@ -33,7 +33,7 @@ warnings.filterwarnings('ignore')
 
 
 
-class VegaLiteEvaluator:
+class VegaLiteEvaluator_EX3B:
     def __init__(self, model_id, output_filename="/output.csv"):
         self.model_id = model_id
         self.evaluator = GPTEvaluator()

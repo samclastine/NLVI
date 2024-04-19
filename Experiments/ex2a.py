@@ -27,7 +27,7 @@ from models import initialize_evllm
 
 
 
-class VegaLiteEvaluator:
+class VegaLiteEvaluator_EX2A:
     def __init__(self, model_id, output_filename="/output.csv"):
         self.model_id = model_id
         self.evaluator = GPTEvaluator()
@@ -72,15 +72,16 @@ Vega-lite Json: """
             print(f"Error in visQA chain func: {str(e)}")
 
 
-    def generate(self, query, dataFile, truth):
+    def generate(self, query, dataFile, truth, temperature):
         try:
             predicted = self.visQA_chain(dataFile,query)
             try:
                 pred = predicted
-                pred = predicted.replace('true', 'True')
+                # pred = predicted.replace('true', 'True')
             except (SyntaxError, ValueError) as e:
                 print("Invalid prediction", e)
                 eval_result = {
+                    "temperature": temperature,
                     "datafile": dataFile,
                     "query": query,
                     "predicted": pred,
@@ -140,6 +141,7 @@ Vega-lite Json: """
                             gptScore = ast.literal_eval(content)
                             print("Evaluated Score:", gptScore)
                             eval_result = {
+                                "temperature": temperature,
                                 "datafile": dataFile,
                                 "query": query,
                                 "predicted": pred_str,
@@ -187,5 +189,5 @@ Vega-lite Json: """
                 Datafile = row['dataset'].lower()
                 # vlSpec_output = vlSpec_output.replace('true', 'True')
                 # vlSpec_output = vlSpec_output.replace("'", '"')
-                self.generate(query, Datafile, vlSpec_output)
+                self.generate(query, Datafile, vlSpec_output, t)
         return "Evaluation Process Completed!!!"
