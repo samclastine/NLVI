@@ -19,7 +19,7 @@ from models import initialize_evllm
 warnings.filterwarnings('ignore')
 
 class VegaLiteEvaluator_EX1A:
-    def __init__(self, model_id, output_filename="/output.csv"):
+    def __init__(self, model_id, output_filename="output.csv"):
         self.model_id = model_id
         self.evaluator = GPTEvaluator()
         self.output_filename = output_filename
