@@ -7,3 +7,4 @@ pydantic==2.6.4
 langchain
 openai
 rouge-score
+faiss-gpu
