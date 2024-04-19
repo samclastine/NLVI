@@ -24,7 +24,7 @@ class VegaLiteEvaluator_EX1A:
         self.evaluator = GPTEvaluator()
         self.output_filename = output_filename
         self.visualization_template = """/
-The output should be only in Vegalite v4 JSON
+Generate Vegalite JSON Specification for given question.
 
 Current conversation:
 {history}

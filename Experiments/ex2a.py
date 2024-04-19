@@ -33,11 +33,13 @@ class VegaLiteEvaluator_EX2A:
         self.evaluator = GPTEvaluator()
         self.output_filename = output_filename
         self.visualization_template = """/
-The output should be only in Vegalite v4 JSON
+Generate Vegalite JSON Specification for given question. \n \n
 
-Current conversation:
-{history}
-Question: {input}
+Data: \n {context} \n
+
+Current conversation: \n
+{history} \n
+Question: {input} \n
 Vega-lite Json: """
         self.VIS_CHAIN_PROMPT = PromptTemplate(input_variables=["history", "input"], template=self.visualization_template)
         self.results = []

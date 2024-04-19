@@ -45,7 +45,7 @@ class VegaLiteEvaluator_EX3B:
         self.FewShotPrompt = FewShotPromptTemplate(
             example_selector=self.selector,
             example_prompt=self.prompt,
-            prefix="""The output should be only in Vegalite v4 JSON""",
+            prefix="""Generate Vegalite JSON Specification for given Query.""",
             suffix="""Previous Conversation:{chat_history}\nData:\n{context}\nInput: {question}\nVegaLite-JSON:""",
             input_variables=["context","question","chat_history"],
         )

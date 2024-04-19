@@ -38,7 +38,7 @@ class VegaLiteEvaluator_EX4B:
         self.output_filename = output_filename
         self.llm = initialize_evllm(model_id= self.model_id, temperature=0.3)
         self.CoT_chain_template = """/
-        The output should be only in Vegalite v4 JSON. \n
+        Generate Vegalite JSON Specification for given question. \n
 
         Previous Conversation: \
         {chat_history}
