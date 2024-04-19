@@ -97,6 +97,7 @@ class VegaLiteEvaluator_EX3B:
             return result
         except(SyntaxError, ValueError) as e:
             print(f"Error in visQA chain func: {str(e)}")
+            pass
 
 
     def generate(self, query, dataFile, truth):
@@ -128,6 +129,7 @@ class VegaLiteEvaluator_EX3B:
                 truth_str = json.dumps(truth_json)
             except (SyntaxError, ValueError) as e:
                 print(f"Error parsing JSON: {str(e)}")
+                pass
 
             # Ensure 'pred' and 'truth' are valid JSON strings
             try:
@@ -176,19 +178,38 @@ class VegaLiteEvaluator_EX3B:
                             self.results.append(eval_result)
                             self.write_to_csv()  # Write the result to CSV
                         except ValueError as e:
+                            eval_result = {
+                            "datafile": dataFile,
+                            "query": query,
+                            "predicted": pred,
+                            "error": "Error evaluating content" + str(e)
+                            }
+                            self.results.append(eval_result)
+                            self.write_to_csv()  # Write the result to CSV
                             print(f"Error evaluating content: {str(e)}")
+                            pass
                     else:
                         # If content is not a string, handle the integer or other types as needed
                         print(f"Content is not a string, but a {type(content).__name__}: {content}")
 
                 except (SyntaxError, ValueError) as e:
                     print(f"Error parsing JSON: {str(e)}")
+                    eval_result = {
+                            "datafile": dataFile,
+                            "query": query,
+                            "predicted": pred,
+                            "error": "Error parsing JSON" + str(e)
+                            }
+                    self.results.append(eval_result)
+                    self.write_to_csv()  # Write the result to CSV
+                    print(f"Error parsing JSON: {str(e)}")
+                    pass
             except (SyntaxError, ValueError):
                 print("Invalid JSON in 'pred'")
-                return "failed to evaluate"
+                pass
         except (SyntaxError, ValueError):
             print("Invalid JSON")
-            return "failed load Json"
+            pass
 
     def write_to_csv(self):
         result_df = pd.DataFrame(self.results)
