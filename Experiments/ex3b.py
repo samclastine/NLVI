@@ -89,7 +89,7 @@ class VegaLiteEvaluator_EX3B:
                 self.llm,
                 retriever=csv_retriever,
                 combine_docs_chain_kwargs={"prompt": self.FewShotPrompt},
-                memory=memory,
+                memory=self.memory,
                 verbose=True
             )
             result = vis_chain({"question": input})

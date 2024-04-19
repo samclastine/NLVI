@@ -95,16 +95,13 @@ class VegaLiteEvaluator_EX3A:
             csv_docs = csv_text_splitter.split_documents(csv_data)
             embeddings = OpenAIEmbeddings()
             csv_retriever = FAISS.from_documents(csv_docs, embeddings).as_retriever()
-            memory = ConversationBufferMemory(
-                memory_key="history",
-                input_key="question"
-            )
+
             
             vis_chain = ConversationalRetrievalChain.from_llm(
                 self.llm,
                 retriever=csv_retriever,
                 combine_docs_chain_kwargs={"prompt": self.FewShotPrompt},
-                memory=memory,
+                memory=self.memory,
                 verbose=True
             )
             result = vis_chain({"question": input})
