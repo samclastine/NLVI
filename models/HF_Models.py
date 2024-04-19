@@ -15,6 +15,7 @@ def initialize_evllm(temperature:0.3, model_id):
         top_k=10,
         top_p=0.95,
         temperature=temperature,
+        download_dir="/models/saved",
         logits_processors=[processor]  # Integrating your logits processor
     )
 
