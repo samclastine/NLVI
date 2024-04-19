@@ -1,5 +1,8 @@
 from VLLM import EVLLM
 from logits import create_logits_processor
+from logits_processor import create_logits_processor
+
+print(create_logits_processor)
 
 def initialize_evllm(temperature:0.3, model_id):
     processor = create_logits_processor(model_id=model_id)
