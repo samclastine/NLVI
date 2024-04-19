@@ -125,7 +125,7 @@ class VegaLiteEvaluator:
                 eval_result = None
                 _error = None
                 try:
-                    pred_json = json.loads(pred)[0]
+                    pred_json = json.loads(pred)
                     pred_json['data'].clear()
                     pred_json['data']['url'] = 'https://raw.githubusercontent.com/nl4dv/nl4dv/master/examples/assets/data/' + dataFile
                     truth_json = ast.literal_eval(truth)
@@ -190,8 +190,8 @@ class VegaLiteEvaluator:
 
     def run_evaluation(self, queries_df):
         for index, row in queries_df.iterrows():
-            if index == 50:
-                break
+            # if index == 50:
+            #     break
             query = row['query']
             vlSpec_output = row['vlSpec_output']
             Datafile = row['Datafile']

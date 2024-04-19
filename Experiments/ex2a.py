@@ -173,8 +173,8 @@ Vega-lite Json: """
         for t in self.temperatures:
             
             for index, row in queries_df.iterrows():
-                if index == 50:
-                    break
+                # if index == 50:
+                #     break
                 query = row['query']
                 vlSpec_output = row['vlSpec_output']
                 Datafile = row['Datafile']

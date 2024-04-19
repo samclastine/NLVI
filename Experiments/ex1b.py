@@ -170,8 +170,8 @@ Vega-lite Json: """
 
     def run_evaluation(self, queries_df):
         for index, row in queries_df.iterrows():
-            if index == 50:
-                break
+            # if index == 50:
+            #     break
             query = row['query']
             vlSpec_output = row['vlSpec_output']
             Datafile = row['Datafile']

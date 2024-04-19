@@ -106,8 +106,8 @@ class VegaLiteEvaluator:
         try:
             predicted = self.visQA_chain(dataFile,query)
             try:
-                # pred = predicted
-                pred = predicted.replace('true', 'True')
+                pred = predicted
+                # pred = predicted.replace('true', 'True')
             except (SyntaxError, ValueError) as e:
                 print("Invalid prediction", e)
                 eval_result = {
@@ -202,8 +202,8 @@ class VegaLiteEvaluator:
 
     def run_evaluation(self, queries_df):
         for index, row in queries_df.iterrows():
-            if index == 50:
-                break
+            # if index == 50:
+            #     break
             query = row['query']
             vlSpec_output = row['vlSpec_output']
             Datafile = row['Datafile']
