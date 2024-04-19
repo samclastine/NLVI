@@ -74,6 +74,11 @@ class VegaLiteEvaluator_EX3A:
 
         self.llm = initialize_evllm(model_id= self.model_id, temperature=0.3)
         self.data_url = None
+        self.memory = ConversationBufferWindowMemory(
+            memory_key="chat_history",
+            return_messages=True,
+            k=1
+        )
         
     def visQA_chain(self, dataFile, input):
         if dataFile == "superstore":

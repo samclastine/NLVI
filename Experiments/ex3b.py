@@ -62,6 +62,11 @@ class VegaLiteEvaluator_EX3B:
 
 
         self.data_url = None
+        self.memory = ConversationBufferWindowMemory(
+            memory_key="chat_history",
+            return_messages=True,
+            k=1
+        )
         
     def visQA_chain(self, dataFile, input):
         if dataFile == "superstore":
@@ -78,10 +83,7 @@ class VegaLiteEvaluator_EX3B:
             csv_docs = csv_text_splitter.split_documents(csv_data)
             embeddings = OpenAIEmbeddings()
             csv_retriever = FAISS.from_documents(csv_docs, embeddings).as_retriever()
-            memory = ConversationBufferMemory(
-                memory_key="history",
-                input_key="question"
-            )
+
             
             vis_chain = ConversationalRetrievalChain.from_llm(
                 self.llm,

@@ -62,6 +62,12 @@ class VegaLiteEvaluator_EX4B:
         self.zero_CHAIN_PROMPT = PromptTemplate(input_variables=["cot_output","context"], template= self.zero_shot_chain_template)
         self.results = []
         self.data_url = None
+        self.memory = ConversationBufferWindowMemory(
+            memory_key="chat_history",
+            k=1,
+            input_key='question',
+            return_messages=True
+        )
     def visQA_chain(self, dataFile, input):
         if dataFile == "superstore":
             self.data_url = "https://raw.githubusercontent.com/nl4dv/nl4dv/master/examples/assets/data/" + dataFile + ".csv"
@@ -77,11 +83,8 @@ class VegaLiteEvaluator_EX4B:
             csv_docs = csv_text_splitter.split_documents(csv_data)
             embeddings = OpenAIEmbeddings()
             csv_retriever = FAISS.from_documents(csv_docs, embeddings).as_retriever()
-            memory = ConversationBufferMemory(
-                memory_key="history",
-                input_key="question"
-            )
-            
+
+
             vis_cot_chain = ConversationalRetrievalChain.from_llm(
                 self.llm,
                 retriever=csv_retriever,
@@ -89,7 +92,7 @@ class VegaLiteEvaluator_EX4B:
                 combine_docs_chain_kwargs={"prompt": self.cot_CHAIN_PROMPT},
                 output_key= "cot_output",
                 verbose= True,
-                memory=memory,
+                memory=self.memory,
             )
             vis_zero_chain = ConversationalRetrievalChain.from_llm(
                 self.llm,

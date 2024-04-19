@@ -58,6 +58,11 @@ class VegaLiteEvaluator_EX5:
         self.VIS_CHAIN_PROMPT = PromptTemplate(input_variables=["history", "question"], template=self.visualization_template)
         self.results = []
         self.data_url = None
+        self.memory = ConversationBufferWindowMemory(
+                memory_key="history",
+                input_key="question",
+                k=1
+            )
     def visQA_chain(self, dataFile, input):
         if dataFile == "superstore":
             self.data_url = "https://raw.githubusercontent.com/nl4dv/nl4dv/master/examples/assets/data/" + dataFile + ".csv"
@@ -73,16 +78,14 @@ class VegaLiteEvaluator_EX5:
             csv_docs = csv_text_splitter.split_documents(csv_data)
             embeddings = OpenAIEmbeddings()
             csv_retriever = FAISS.from_documents(csv_docs, embeddings).as_retriever()
-            memory = ConversationBufferMemory(
-                memory_key="history",
-                input_key="question"
-            )
+
+
             
             vis_chain = RetrievalQA.from_chain_type(
                 self.llm,
                 retriever=csv_retriever,
                 chain_type="stuff",
-                chain_type_kwargs={"prompt": self.VIS_CHAIN_PROMPT,"verbose":False,"memory": memory}
+                chain_type_kwargs={"prompt": self.VIS_CHAIN_PROMPT,"verbose":False,"memory": self.memory}
             )
             result = vis_chain({"query": input})
             result = result["result"]

@@ -30,16 +30,14 @@ Current conversation:
 {history}
 Question: {input}
 Vega-lite Json: """
-        self.VIS_CHAIN_PROMPT = PromptTemplate(input_variables=["history", "input"], template=self.visualization_template)
+        self.VIS_CHAIN_PROMPT = PromptTemplate(input_variables=["input"], template=self.visualization_template)
         self.results = []
         self.llm = initialize_evllm(model_id=self.model_id, temperature=0)
 
     def visQA_chain(self, input):
         print("")
         try:
-            
-            memory = ConversationBufferWindowMemory(k=1)
-            vis_chain = ConversationChain(llm=self.llm, prompt=self.VIS_CHAIN_PROMPT, verbose=True, memory=memory)
+            vis_chain = ConversationChain(llm=self.llm, prompt=self.VIS_CHAIN_PROMPT, verbose=True)
             result = vis_chain.predict(input=input)
         except (SyntaxError, ValueError) as e:
             print(f"Error in visQA chain func: {str(e)}")
