@@ -23,6 +23,12 @@ class GPTEvaluator:
         """
         data_url = 'https://raw.githubusercontent.com/nl4dv/nl4dv/master/examples/assets/data/' + docName
 
+        
+        if docName == "superstore":
+            data_url = "https://raw.githubusercontent.com/nl4dv/nl4dv/master/examples/assets/data/" + docName + ".csv"
+        else:
+            data_url = "https://raw.githubusercontent.com/nlvcorpus/nlvcorpus.github.io/main/datasets/" + docName + ".csv"
+
         urllib.request.urlretrieve(data_url, docName)
         csv_loader = CSVLoader(file_path=docName)
         csv_data = csv_loader.load()

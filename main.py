@@ -18,7 +18,7 @@ def run_experiment(exp_name, result_filename, model_id):
     if exp_name=='ex1a':
         logging.info(f"Running {exp_name} with model {model_id}")
         evaluator = VegaLiteEvaluator_EX1A(model_id=model_id, output_filename=result_filename)
-        queries_df = pd.read_csv('/eval_data/nlvCorpus_150.csv')
+        queries_df = pd.read_csv('/content/NLVI/eval_data/nlvCorpus_150.csv')
         result = evaluator.run_evaluation(queries_df)
         print(result)
     if exp_name=='ex1b':
