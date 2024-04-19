@@ -43,9 +43,14 @@ Question: {input}
 Vega-lite Json: """
         self.VIS_CHAIN_PROMPT = PromptTemplate(input_variables=["history", "input"], template=self.visualization_template)
         self.results = []
+        self.data_url = None
     def visQA_chain(self, dataFile, input):
+        if dataFile == "superstore":
+            self.data_url = "https://raw.githubusercontent.com/nl4dv/nl4dv/master/examples/assets/data/" + dataFile + ".csv"
+        else:
+            self.data_url = "https://raw.githubusercontent.com/nlvcorpus/nlvcorpus.github.io/main/datasets/" + dataFile + ".csv"
         try:
-            urllib.request.urlretrieve('https://raw.githubusercontent.com/nl4dv/nl4dv/master/examples/assets/data/' + dataFile, dataFile)
+            urllib.request.urlretrieve(self.data_url, dataFile)
             csv_loader = CSVLoader(file_path=dataFile)
             csv_data = csv_loader.load()
             csv_text_splitter = CharacterTextSplitter(
@@ -93,10 +98,7 @@ Vega-lite Json: """
             # Print the JSON strings for debugging
             print("Predicted JSON:", pred)
             print("Truth JSON:", truth)
-            if dataFile == "superstore":
-                data_url = "https://raw.githubusercontent.com/nl4dv/nl4dv/master/examples/assets/data/" + dataFile + ".csv"
-            else:
-                data_url = "https://raw.githubusercontent.com/nlvcorpus/nlvcorpus.github.io/main/datasets/" + dataFile + ".csv"
+
 
             try:
                 truth_json = json.loads(truth)

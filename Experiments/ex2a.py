@@ -42,10 +42,15 @@ Vega-lite Json: """
         self.VIS_CHAIN_PROMPT = PromptTemplate(input_variables=["history", "input"], template=self.visualization_template)
         self.results = []
         self.temperatures = [0, 0.3, 0.7, 1]
-        self.llm = initialize_evllm(model_id= self.model_id, temperature=0.5)
+        self.llm = initialize_evllm(model_id= self.model_id, temperature=0)
+        self.data_url = None
     def visQA_chain(self, dataFile, input):
+        if dataFile == "superstore":
+            self.data_url = "https://raw.githubusercontent.com/nl4dv/nl4dv/master/examples/assets/data/" + dataFile + ".csv"
+        else:
+            self.data_url = "https://raw.githubusercontent.com/nlvcorpus/nlvcorpus.github.io/main/datasets/" + dataFile + ".csv"
         try:
-            urllib.request.urlretrieve('https://raw.githubusercontent.com/nl4dv/nl4dv/master/examples/assets/data/' + dataFile, dataFile)
+            urllib.request.urlretrieve(self.data_url, dataFile)
             csv_loader = CSVLoader(file_path=dataFile)
             csv_data = csv_loader.load()
             csv_text_splitter = CharacterTextSplitter(

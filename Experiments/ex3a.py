@@ -52,7 +52,7 @@ class VegaLiteEvaluator_EX3A:
         self.output_filename = output_filename
         self.results = []
         self.prompt = PromptTemplate(input_variables=["question", "output"], template= """Here are some example:\nQuestion: {question}\nVEGALITE JSON: {output}""")
-        self.selector = SemanticSimilarityExampleSelector.from_examples(examples, OpenAIEmbeddings(), FAISS, k=1)
+        self.selector = SemanticSimilarityExampleSelector.from_examples(self.shots, OpenAIEmbeddings(), FAISS, k=1)
         self.FewShotPrompt = FewShotPromptTemplate(
             example_selector=self.selector,
             example_prompt=self.prompt,
@@ -71,11 +71,16 @@ class VegaLiteEvaluator_EX3A:
     {"question": "Annual Weather Heatmap", "output": """{{ "$schema": "https://vega.github.io/schema/vega-lite/v4.json", "data": {{ "url": "data/seattle-weather.csv" }}, "title": "Daily Max Temperatures (C) in Seattle, WA", "config": {{ "view": {{ "strokeWidth": 0, "step": 13 }}, "axis": {{ "domain": false }} }}, "mark": "rect", "encoding": {{ "x": {{ "field": "date", "timeUnit": "date", "type": "ordinal", "title": "Day", "axis": {{ "labelAngle": 0, "format": "%e" }} }}, "y": {{ "field": "date", "timeUnit": "month", "type": "ordinal", "title": "Month" }}, "color": {{ "field": "temp_max", "aggregate": "max", "type": "quantitative", "legend": {{ "title": null }} }} }}``"""},
     {"question": "Visualize the relationships between various measurements of penguin features (parallel coordinate plot)" , "output": """{{ "$schema": "https://vega.github.io/schema/vega-lite/v4.json", "description": "Though Vega-Lite supports only one scale per axes, one can create a parallel coordinate plot by folding variables, using `joinaggregate` to normalize their values and using ticks and rules to manually create axes.", "data": {{ "url": "data/penguins.json" }}, "width": 600, "height": 300, "transform": [ {{"filter": "datum['Beak Length (mm)']"}}, {{"window": [{{"op": "count", "as": "index"}}]}}, {{"fold": ["Beak Length (mm)", "Beak Depth (mm)", "Flipper Length (mm)", "Body Mass (g)"]}}, {{ "joinaggregate": [ {{"op": "min", "field": "value", "as": "min"}}, {{"op": "max", "field": "value", "as": "max"}} ], "groupby": ["key"] }}, {{ "calculate": "(datum.value - datum.min) / (datum.max-datum.min)", "as": "norm_val" }}, {{ "calculate": "(datum.min + datum.max) / 2", "as": "mid" }} ], "layer": [{{ "mark": {{"type": "rule", "color": "#ccc"}}, "encoding": {{ "detail": {{"aggregate": "count"}}, "x": {{"field": "key"}} }} }}, {{ "mark": "line", "encoding": {{ "color": {{"type": "nominal", "field": "Species"}}, "detail": {{"type": "nominal", "field": "index"}}, "opacity": {{"value": 0.3}}, "x": {{"type": "nominal", "field": "key"}}, "y": {{"type": "quantitative", "field": "norm_val", "axis": null}}, "tooltip": [{{ "type": "quantitative", "field": "Beak Length (mm)" }}, {{ "type": "quantitative", "field": "Beak Depth (mm)" }}, {{ "type": "quantitative", "field": "Flipper Length (mm)" }}, {{ "type": "quantitative", "field": "Body Mass (g)" }}] }} }}, {{ "encoding": {{ "x": {{"type": "nominal", "field": "key"}}, "y": {{"value": 0}} }}, "layer": [{{ "mark": {{"type": "text", "style": "label"}}, "encoding": {{ "text": {{"aggregate": "max", "field": "max"}} }} }}, {{ "mark": {{"type": "tick", "style": "tick", "size": 8, "color": "#ccc"}} }}] }}, {{ "encoding": {{ "x": {{"type": "nominal", "field": "key"}}, "y": {{"value": 150}} }}, "layer": [{{ "mark": {{"type": "text", "style": "label"}}, "encoding": {{ "text": {{"aggregate": "min", "field": "mid"}} }} }}, {{ "mark": {{"type": "tick", "style": "tick", "size": 8, "color": "#ccc"}} }}] }}, {{ "encoding": {{ "x": {{"type": "nominal", "field": "key"}}, "y": {{"value": 300}} }}, "layer": [{{ "mark": {{"type": "text", "style": "label"}}, "encoding": {{ "text": {{"aggregate": "min", "field": "min"}} }} }}, {{ "mark": {{"type": "tick", "style": "tick", "size": 8, "color": "#ccc"}} }}] }}], "config": {{ "axisX": {{"domain": false, "labelAngle": 0, "tickColor": "#ccc", "title": null}}, "view": {{"stroke": null}}, "style": {{ "label": {{"baseline": "middle", "align": "right", "dx": -5}}, "tick": {{"orient": "horizontal"}} }} }} }}"""}
     ]
-        self.llm = initialize_evllm(model_id= self.model_id, temperature=0.5)
+        self.llm = initialize_evllm(model_id= self.model_id, temperature=0.3)
+        self.data_url = None
         
     def visQA_chain(self, dataFile, input):
+        if dataFile == "superstore":
+            self.data_url = "https://raw.githubusercontent.com/nl4dv/nl4dv/master/examples/assets/data/" + dataFile + ".csv"
+        else:
+            self.data_url = "https://raw.githubusercontent.com/nlvcorpus/nlvcorpus.github.io/main/datasets/" + dataFile + ".csv"
         try:
-            urllib.request.urlretrieve('https://raw.githubusercontent.com/nl4dv/nl4dv/master/examples/assets/data/' + dataFile, dataFile)
+            urllib.request.urlretrieve(self.data_url, dataFile)
             csv_loader = CSVLoader(file_path=dataFile)
             csv_data = csv_loader.load()
             csv_text_splitter = CharacterTextSplitter(
