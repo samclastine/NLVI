@@ -1,13 +1,12 @@
 from openai import OpenAI
 from langchain.vectorstores import FAISS
 import urllib
-import os
+
 from langchain.document_loaders import CSVLoader
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.embeddings import OpenAIEmbeddings
 
 
-os.environ["OPENAI_API_KEY"] = "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"
 
 class GPTEvaluator:
     def __init__(self, engine='gpt-4-turbo'):

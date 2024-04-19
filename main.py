@@ -3,6 +3,7 @@ import argparse
 import logging
 import warnings
 import pandas as pd
+import os
 
 warnings.filterwarnings('ignore')
 nlvCorpus = pd.read_csv('/content/NLVI/eval_data/nlvCorpus_150.csv')
@@ -12,6 +13,7 @@ def setup_arg_parser():
     parser.add_argument('--exp', type=str, help='Experiment identifier (e.g., ex1a, ex1b)')
     parser.add_argument('--output', type=str, help='Output CSV file name')
     parser.add_argument('--modelID', type=str, help='Model identifier')
+    parser.add_argument('--openaiAPI', type=str, help='openai api authentication code')
     return parser
 
 
@@ -63,13 +65,11 @@ def run_experiment(exp_name, result_filename, model_id):
 def main():
     parser = setup_arg_parser()
     args = parser.parse_args()
-    print("im here")
-
-    if args.exp and args.output and args.modelID:
-      print("helllooooooooo im here")
+    if args.exp and args.output and args.modelID and args.openaiAPI:
+      os.environ["OPENAI_API_KEY"] = args.openaiAPI
       run_experiment(args.exp, args.output, args.modelID)
     else:
-        print("Missing arguments, please specify --exp, --output, and --modelID.")
+        print("Missing arguments, please specify --exp, --output, --openaiAPI and --modelID.")
 
 if __name__ == "__main__":
     main()
