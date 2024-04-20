@@ -22,15 +22,15 @@ python main.py --exp "<experiment_name>" --modelID "<hugging_face_model_id>" --o
 ### Experiment Options
 
 You can replace `<experiment_name>` with any of the following to specify the experiment you wish to run:
-- `ex1a`
-- `ex1b`
-- `ex2a`
-- `ex2b`
-- `ex3a`
-- `ex3b`
-- `ex4a`
-- `ex4b`
-- `ex5a`
+- `ex1a [Evaluating without Data in Prompt - Zero Shot]`
+- `ex1b [Evaluating with Data in Prompt - Zero Shot]`
+- `ex2a [Few Shot (generic examples)]`
+- `ex2b [Few shot COT (generic examples)]`
+- `ex3a [RAG One Shot]`
+- `ex3b [RAG One Shot with CoT]`
+- `ex4a [Zero Shot Baseline]`
+- `ex4b [Zero Shot CoT]`
+- `ex5a [CoT Baseline]`
 
 ### Model Options
 

@@ -1,5 +1,7 @@
 from VLLM import EVLLM
 from logits import create_logits_processor
+from globals import model_dir
+print(model_dir)
 # from logits_processor import create_logits_processor
 
 # print(create_logits_processor)

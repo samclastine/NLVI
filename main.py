@@ -4,6 +4,7 @@ import logging
 import warnings
 import pandas as pd
 import os
+import globals
 
 warnings.filterwarnings('ignore')
 nlvCorpus = pd.read_csv('/content/NLVI/eval_data/nlvCorpus_150.csv')
@@ -14,6 +15,7 @@ def setup_arg_parser():
     parser.add_argument('--output', type=str, help='Output CSV file name')
     parser.add_argument('--modelID', type=str, help='Model identifier')
     parser.add_argument('--openaiAPI', type=str, help='openai api authentication code')
+    parser.add_argument('--model_dir', type=str, help='Folder directory for the model has to save')
     return parser
 
 
@@ -65,8 +67,9 @@ def run_experiment(exp_name, result_filename, model_id):
 def main():
     parser = setup_arg_parser()
     args = parser.parse_args()
-    if args.exp and args.output and args.modelID and args.openaiAPI:
+    if args.exp and args.output and args.modelID and args.openaiAPI and args.model_dir:
       os.environ["OPENAI_API_KEY"] = args.openaiAPI
+      globals.model_dir = args.model_dir
       run_experiment(args.exp, args.output, args.modelID)
     else:
         print("Missing arguments, please specify --exp, --output, --openaiAPI and --modelID.")
