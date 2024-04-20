@@ -1,7 +1,7 @@
 from VLLM import EVLLM
 from logits import create_logits_processor
-from globals import model_dir
-print(model_dir)
+import config
+config.init() 
 # from logits_processor import create_logits_processor
 
 # print(create_logits_processor)
@@ -17,7 +17,7 @@ def initialize_evllm(temperature:0.3, model_id):
         top_k=10,
         top_p=0.95,
         temperature=temperature,
-        download_dir="/content/NLVI/models/saved",
+        download_dir=config.model_dir,
         logits_processors=[processor],  # Integrating your logits processor
         gpu_memory_utilization=0.9,
         vllm_kwargs={"max_model_len": 4096}

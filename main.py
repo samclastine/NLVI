@@ -4,7 +4,7 @@ import logging
 import warnings
 import pandas as pd
 import os
-import globals
+import config
 
 warnings.filterwarnings('ignore')
 nlvCorpus = pd.read_csv('/content/NLVI/eval_data/nlvCorpus_150.csv')
@@ -69,7 +69,7 @@ def main():
     args = parser.parse_args()
     if args.exp and args.output and args.modelID and args.openaiAPI and args.model_dir:
       os.environ["OPENAI_API_KEY"] = args.openaiAPI
-      globals.model_dir = args.model_dir
+      config.model_dir = args.model_dir
       run_experiment(args.exp, args.output, args.modelID)
     else:
         print("Missing arguments, please specify --exp, --output, --openaiAPI and --modelID.")

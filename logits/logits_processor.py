@@ -6,6 +6,9 @@ from pydantic import BaseModel
 from typing import List, Dict, Any, Optional, Union
 import warnings
 import gc
+import config
+
+config.init()
 # Suppress warnings, if necessary
 warnings.filterwarnings('ignore')
 
@@ -63,7 +66,7 @@ def create_logits_processor(model_id):
     Create and return the logits processor using the given model ID.
     """
     # Initialize the LLM with the given model ID
-    llm = vllm.LLM(model=model_id, download_dir="/content/NLVI/models/saved", max_model_len=4096)
+    llm = vllm.LLM(model=model_id, download_dir=config.model_dir, max_model_len=4096)
     
     # Build the tokenizer data for enforcing token constraints
     tokenizer_data = build_vllm_token_enforcer_tokenizer_data(llm)
