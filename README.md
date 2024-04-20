@@ -24,8 +24,7 @@ python main.py --exp "<experiment_name>" --modelID "<hugging_face_model_id>" --o
 You can replace `<experiment_name>` with any of the following to specify the experiment you wish to run:
 - `ex1a [Evaluating without Data in Prompt - Zero Shot]`
 - `ex1b [Evaluating with Data in Prompt - Zero Shot]`
-- `ex2a [Few Shot (generic examples)]`
-- `ex2b [Few shot COT (generic examples)]`
+- `ex2a [Temperature Param Analysis]`
 - `ex3a [RAG One Shot]`
 - `ex3b [RAG One Shot with CoT]`
 - `ex4a [Zero Shot Baseline]`
