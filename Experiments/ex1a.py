@@ -42,7 +42,7 @@ Vega-lite Json: """
         except (SyntaxError, ValueError) as e:
             print(f"Error in visQA chain func: {str(e)}")
             result = None
-            pass
+            return
         return result
 
     def generate(self, query, dataFile, truth):
@@ -62,7 +62,7 @@ Vega-lite Json: """
                 }
                 self.results.append(eval_result)
                 self.write_to_csv()  # Write the result to CSV
-                pass
+                return
 
             # Print the JSON strings for debugging
             print("Predicted JSON:", pred)
@@ -83,7 +83,7 @@ Vega-lite Json: """
                 truth_str = json.dumps(truth_json)
             except (SyntaxError, ValueError) as e:
                 print(f"Error parsing JSON: {str(e)}")
-                pass
+                return
 
             # Ensure 'pred' and 'truth' are valid JSON strings
             try:
@@ -141,7 +141,7 @@ Vega-lite Json: """
                             self.results.append(eval_result)
                             self.write_to_csv()  # Write the result to CSV
                             print(f"Error evaluating content: {str(e)}")
-                            pass
+                            return
                     else:
                         # If content is not a string, handle the integer or other types as needed
                         print(f"Content is not a string, but a {type(content).__name__}: {content}")
@@ -156,13 +156,13 @@ Vega-lite Json: """
                     self.results.append(eval_result)
                     self.write_to_csv()  # Write the result to CSV
                     print(f"Error parsing JSON: {str(e)}")
-                    pass
+                    return
             except (SyntaxError, ValueError):
                 print("Invalid JSON in 'pred'")
-                pass
+                return
         except (SyntaxError, ValueError):
             print("Invalid JSON")
-            pass
+            return
 
     def write_to_csv(self):
         result_df = pd.DataFrame(self.results)
