@@ -165,11 +165,24 @@ Vega-lite Json: """
             return
 
     def write_to_csv(self):
+        # Ensure there are results to write
+        if not self.results:
+            print("No results to write.")
+            return
+
+        # Create a DataFrame from results
         result_df = pd.DataFrame(self.results)
-        if os.path.isfile(self.output_filename):
-            result_df.to_csv(self.output_filename, mode='a', header=False, index=False)
-        else:
-            result_df.to_csv(self.output_filename, index=False)
+        print("DataFrame to be written:\n", result_df)  # Debugging line to see what is being written
+
+        try:
+            # Check if the file exists; append if yes, write new if no
+            if os.path.isfile(self.output_filename):
+                result_df.to_csv(self.output_filename, mode='a', header=False, index=False)
+            else:
+                result_df.to_csv(self.output_filename, index=False)
+            print("Results successfully written to CSV.")
+        except Exception as e:
+            print(f"Failed to write to CSV: {str(e)}")  # Exception handling to capture and log any errors during the write operation
 
     def run_evaluation(self, queries_df):
         for index, row in queries_df.iterrows():
