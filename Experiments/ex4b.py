@@ -127,7 +127,7 @@ class VegaLiteEvaluator_EX4B:
 
             try:
                 truth = truth.replace('true', 'True')
-                truth_json = json.loads(truth)
+                truth_json = ast.literal_eval(truth)
                 truth_json['data'].clear()
                 truth_json['data']['url'] = self.data_url
                 truth_str = json.dumps(truth_json)
@@ -253,5 +253,5 @@ class VegaLiteEvaluator_EX4B:
             # vlSpec_output = vlSpec_output.replace('true', 'True')
             # vlSpec_output = vlSpec_output.replace("'", '"')
             self.generate(query, Datafile, vlSpec_output)
-            self.write_to_csv()
+        self.write_to_csv()
         return "Evaluation Process Completed!!!"

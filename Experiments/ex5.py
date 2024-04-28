@@ -111,7 +111,7 @@ class VegaLiteEvaluator_EX5:
             pred = predicted
             try:
                 truth = truth.replace('true', 'True')
-                truth_json = json.loads(truth)
+                truth_json = ast.literal_eval(truth)
                 truth_json['data'].clear()
                 truth_json['data']['url'] = self.data_url
                 truth_str = json.dumps(truth_json)
@@ -237,5 +237,5 @@ class VegaLiteEvaluator_EX5:
             vlSpec_output = row['VegaLiteSpec']
             Datafile = row['dataset'].lower()
             self.generate(query, Datafile, vlSpec_output)
-            self.write_to_csv()
+        self.write_to_csv()
         return "Evaluation Process Completed!!!"

@@ -127,7 +127,7 @@ class VegaLiteEvaluator_EX3A:
             pred = predicted
             try:
                 truth = truth.replace('true', 'True')
-                truth_json = json.loads(truth)
+                truth_json = ast.literal_eval(truth)
                 truth_json['data'].clear()
                 truth_json['data']['url'] = self.data_url
                 truth_str = json.dumps(truth_json)
@@ -137,8 +137,8 @@ class VegaLiteEvaluator_EX3A:
                 eval_result = {
                     "datafile": dataFile,
                     "query": query,
-                    "actual": truth_str,
-                    "predicted": pred_str,
+                    "actual": truth,
+                    "predicted": pred,
                     "error": "Error parsing Truth JSON:" + str(e)
                 }
                 self.append_result(eval_result)
@@ -251,5 +251,5 @@ class VegaLiteEvaluator_EX3A:
             vlSpec_output = row['VegaLiteSpec']
             Datafile = row['dataset'].lower()
             self.generate(query, Datafile, vlSpec_output)
-            self.write_to_csv()
+        self.write_to_csv()
         return "Evaluation Process Completed!!!"

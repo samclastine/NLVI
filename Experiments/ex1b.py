@@ -98,7 +98,7 @@ Vega-lite Json: """
             pred = predicted
             try:
                 truth = truth.replace('true', 'True')
-                truth_json = json.loads(truth)
+                truth_json = ast.literal_eval(truth)
                 truth_json['data'].clear()
                 truth_json['data']['url'] = self.data_url
                 truth_str = json.dumps(truth_json)
@@ -108,8 +108,8 @@ Vega-lite Json: """
                 eval_result = {
                     "datafile": dataFile,
                     "query": query,
-                    "actual": truth_str,
-                    "predicted": pred_str,
+                    "actual": truth,
+                    "predicted": pred,
                     "error": "Error parsing Truth JSON:" + str(e)
                 }
                 self.append_result(eval_result)
@@ -223,5 +223,5 @@ Vega-lite Json: """
             vlSpec_output = row['VegaLiteSpec']
             Datafile = row['dataset'].lower()
             self.generate(query, Datafile, vlSpec_output)
-            self.write_to_csv()
+        self.write_to_csv()
         return "Evaluation Process Completed!!!"
