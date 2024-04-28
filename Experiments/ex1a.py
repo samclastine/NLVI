@@ -61,8 +61,8 @@ Vega-lite Json: """
                     "error": "Invalid prediction" + str(e)
                 }
                 self.results.append(eval_result)
-                self.write_to_csv()  # Write the result to CSV
-                return
+                # self.write_to_csv()  # Write the result to CSV
+                return self.results
 
             # Print the JSON strings for debugging
             print("Predicted JSON:", pred)
@@ -83,7 +83,15 @@ Vega-lite Json: """
                 truth_str = json.dumps(truth_json)
             except (SyntaxError, ValueError) as e:
                 print(f"Error parsing JSON: {str(e)}")
-                return
+                eval_result = {
+                    "datafile": dataFile,
+                    "query": query,
+                    "predicted": pred,
+                    "error": "Error parsing JSON:" + str(e)
+                }
+                self.results.append(eval_result)
+                return self.results
+
 
             # Ensure 'pred' and 'truth' are valid JSON strings
             try:
@@ -141,7 +149,6 @@ Vega-lite Json: """
                             self.results.append(eval_result)
                             self.write_to_csv()  # Write the result to CSV
                             print(f"Error evaluating content: {str(e)}")
-                            return
                     else:
                         # If content is not a string, handle the integer or other types as needed
                         print(f"Content is not a string, but a {type(content).__name__}: {content}")
@@ -154,15 +161,12 @@ Vega-lite Json: """
                             "error": "Error parsing JSON" + str(e)
                             }
                     self.results.append(eval_result)
-                    self.write_to_csv()  # Write the result to CSV
                     print(f"Error parsing JSON: {str(e)}")
-                    return
+                    return self.results
             except (SyntaxError, ValueError):
                 print("Invalid JSON in 'pred'")
-                return
         except (SyntaxError, ValueError):
             print("Invalid JSON")
-            return
 
     def write_to_csv(self):
         # Ensure there are results to write
@@ -193,5 +197,7 @@ Vega-lite Json: """
             Datafile = row['dataset'].lower()
             # vlSpec_output = vlSpec_output.replace('true', 'True')
             # vlSpec_output = vlSpec_output.replace("'", '"')
-            self.generate(query, Datafile, vlSpec_output)
-        return "Evaluation Process Completed!!!"
+            results = self.generate(query, Datafile, vlSpec_output)
+        self.write_to_csv()
+        print("Evaluation Process Completed!!!")
+        return results
