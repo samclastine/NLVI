@@ -69,6 +69,8 @@ class VegaLiteEvaluator_EX3B:
         )
         
     def visQA_chain(self, dataFile, input):
+        pred_str = None
+        truth_str =  None
         if dataFile == "superstore":
             self.data_url = "https://raw.githubusercontent.com/nl4dv/nl4dv/master/examples/assets/data/" + dataFile + ".csv"
         else:
@@ -97,51 +99,45 @@ class VegaLiteEvaluator_EX3B:
             return result
         except(SyntaxError, ValueError) as e:
             print(f"Error in visQA chain func: {str(e)}")
-            pass
 
 
     def generate(self, query, dataFile, truth):
         try:
             predicted = self.visQA_chain(dataFile,query)
-            try:
-                # pred = predicted
-                pred = predicted.replace('true', 'True')
-            except (SyntaxError, ValueError) as e:
-                print("Invalid prediction", e)
-                eval_result = {
-                    "datafile": dataFile,
-                    "query": query,
-                    "predicted": pred,
-                    "error": "Invalid prediction" + str(e)
-                }
-                self.results.append(eval_result)
-                self.write_to_csv()  # Write the result to CSV
-                return "Invalid prediction"
-
-            # Print the JSON strings for debugging
-            print("Predicted JSON:", pred)
-            print("Truth JSON:", truth)
+            pred = predicted
 
             try:
+                truth = truth.replace('true', 'True')
                 truth_json = json.loads(truth)
                 truth_json['data'].clear()
                 truth_json['data']['url'] = self.data_url
                 truth_str = json.dumps(truth_json)
+                truth_str = truth_str.replace('True', 'true')
             except (SyntaxError, ValueError) as e:
                 print(f"Error parsing JSON: {str(e)}")
-                pass
+                eval_result = {
+                    "datafile": dataFile,
+                    "query": query,
+                    "actual": truth_str,
+                    "predicted": pred,
+                    "error": "Error parsing Truth JSON:" + str(e)
+                }
+                self.results.append(eval_result)
+                return self.results
 
             # Ensure 'pred' and 'truth' are valid JSON strings
             try:
                 eval_result = None
                 _error = None
                 try:
+                    pred = pred.replace('true', 'True')
                     pred_json = json.loads(pred)
                     pred_json['data'].clear()
                     pred_json['data']['url'] = self.data_url
-                    truth_json = ast.literal_eval(truth)
-
                     pred_str = json.dumps(pred_json)
+                    pred_str = pred_str.replace('True', 'true')
+
+
                     jcomp = JSONComparator(pred_json, truth_json)
                     jcomp_score = jcomp.evaluate_json()
                     bleu1_score = Bleu_1_score(pred, truth)
@@ -166,6 +162,7 @@ class VegaLiteEvaluator_EX3B:
                             eval_result = {
                                 "datafile": dataFile,
                                 "query": query,
+                                "actual": truth_str,
                                 "predicted": pred_str,
                                 "gpt_eval_score": gptScore['Score'],
                                 "jcomp_score": jcomp_score,
@@ -176,7 +173,6 @@ class VegaLiteEvaluator_EX3B:
                                 "error": _error
                             }
                             self.results.append(eval_result)
-                            self.write_to_csv()  # Write the result to CSV
                         except ValueError as e:
                             eval_result = {
                             "datafile": dataFile,
@@ -185,9 +181,8 @@ class VegaLiteEvaluator_EX3B:
                             "error": "Error evaluating content" + str(e)
                             }
                             self.results.append(eval_result)
-                            self.write_to_csv()  # Write the result to CSV
                             print(f"Error evaluating content: {str(e)}")
-                            pass
+                            return self.results
                     else:
                         # If content is not a string, handle the integer or other types as needed
                         print(f"Content is not a string, but a {type(content).__name__}: {content}")
@@ -197,26 +192,37 @@ class VegaLiteEvaluator_EX3B:
                     eval_result = {
                             "datafile": dataFile,
                             "query": query,
-                            "predicted": pred,
+                            "actual": truth_str,
+                            "predicted": pred_str,
                             "error": "Error parsing JSON" + str(e)
                             }
                     self.results.append(eval_result)
-                    self.write_to_csv()  # Write the result to CSV
                     print(f"Error parsing JSON: {str(e)}")
-                    pass
+                    return self.results
             except (SyntaxError, ValueError):
                 print("Invalid JSON in 'pred'")
-                pass
         except (SyntaxError, ValueError):
             print("Invalid JSON")
-            pass
 
     def write_to_csv(self):
+        # Ensure there are results to write
+        if not self.results:
+            print("No results to write.")
+            return
+
+        # Create a DataFrame from results
         result_df = pd.DataFrame(self.results)
-        if os.path.isfile(self.output_filename):
-            result_df.to_csv(self.output_filename, mode='a', header=False, index=False)
-        else:
-            result_df.to_csv(self.output_filename, index=False)
+        print("DataFrame to be written:\n", result_df)  # Debugging line to see what is being written
+
+        try:
+            # Check if the file exists; append if yes, write new if no
+            if os.path.isfile(self.output_filename):
+                result_df.to_csv(self.output_filename, mode='a', header=False, index=False)
+            else:
+                result_df.to_csv(self.output_filename, index=False)
+            print("Results successfully written to CSV.")
+        except Exception as e:
+            print(f"Failed to write to CSV: {str(e)}")  # Exception handling to capture and log any errors during the write operation
 
     def run_evaluation(self, queries_df):
         for index, row in queries_df.iterrows():
@@ -226,4 +232,5 @@ class VegaLiteEvaluator_EX3B:
             vlSpec_output = row['VegaLiteSpec']
             Datafile = row['dataset'].lower()
             self.generate(query, Datafile, vlSpec_output)
+            self.write_to_csv()
         return "Evaluation Process Completed!!!"
