@@ -24,7 +24,8 @@ from Evaluator import Bleu_1_score, bleu_2_score, rouge_1_score, rouge_2_score, 
 import urllib
 warnings.filterwarnings('ignore')
 from models import initialize_evllm
-
+import gc
+import torch
 
 
 class VegaLiteEvaluator_EX2A:
@@ -236,5 +237,9 @@ Vega-lite Json: """
                 result = self.generate(query, Datafile, vlSpec_output, t)
                 if not result:
                     continue
-            self.write_to_csv()
+            del self.llm
+            gc.collect()
+            torch.cuda.empty_cache()
+            
+        self.write_to_csv()
         return "Evaluation Process Completed!!!"

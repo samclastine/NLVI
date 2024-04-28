@@ -18,42 +18,42 @@ class DataSource(BaseModel):
 
 class Mark(BaseModel):
     type: str
-    tooltip: Optional[Any] = None
-    filled: Optional[bool] = None
-    opacity: Optional[float] = None
+    tooltip: Optional[Any] = "null"
+    filled: Optional[bool] = "null"
+    opacity: Optional[float] = "null"
 
 class Axis(BaseModel):
-    title: Optional[str] = None
-    format: Optional[str] = None
-    labels: Optional[bool] = None
-    ticks: Optional[bool] = None
+    title: Optional[str] = "null"
+    format: Optional[str] = "null"
+    labels: Optional[bool] = "null"
+    ticks: Optional[bool] = "null"
 
 class EncodingChannel(BaseModel):
     field: str
     type: str
-    bin: Optional[bool] = None
-    timeUnit: Optional[str] = None
-    aggregate: Optional[str] = None
-    axis: Optional[Axis] = None
-    sort: Optional[Dict[str, Any]] = None
-    scale: Optional[Dict[str, Any]] = None
-    legend: Optional[Dict[str, Any]] = None
+    bin: Optional[bool] = "null"
+    timeUnit: Optional[str] = "null"
+    aggregate: Optional[str] = "null"
+    axis: Optional[Axis] = "null"
+    sort: Optional[Dict[str, Any]] = "null"
+    scale: Optional[Dict[str, Any]] = "null"
+    legend: Optional[Dict[str, Any]] = "null"
 
 class Encoding(BaseModel):
-    x: Optional[EncodingChannel] = None
-    y: Optional[EncodingChannel] = None
-    color: Optional[EncodingChannel] = None
-    column: Optional[EncodingChannel] = None
+    x: Optional[EncodingChannel] = "null"
+    y: Optional[EncodingChannel] = "null"
+    color: Optional[EncodingChannel] = "null"
+    column: Optional[EncodingChannel] = "null"
 
 class Transform(BaseModel):
     pass
 
 class VegaLiteSchema(BaseModel):
-    description: Optional[str] = None
+    description: Optional[str] = "null"
     data: DataSource
     mark: Mark
     encoding: Encoding
-    transform: Optional[List[Transform]] = None
+    transform: Optional[List[Transform]] = "null"
 
 # Function to delete model and clear CUDA cache
 def delete_llm(model_initialized_var):

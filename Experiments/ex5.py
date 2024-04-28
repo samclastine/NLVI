@@ -34,20 +34,22 @@ class VegaLiteEvaluator_EX5:
         self.output_filename = output_filename
         self.llm = initialize_evllm(model_id= self.model_id, temperature=0.3)
         self.visualization_template =  """/
-            You will act as an expert in data visualization and respond with Vega-Lite v4 JSON only. \
-            You will follow these steps:
+            Generate a Vega-Lite JSON for the given question. \n 
+            Follow these steps:\n
 
-            1. Understand the question and context.
-            2. Identify the key fields in the data variable that need to be visualized.
-            3. Determine the appropriate chart type (bar, line, scatter, etc.) based on the question.
-            4. Specify the basic chart parameters like width, height, title, axes labels.
-            5. Add transforms like aggregation, filtering, sorting as needed:
-            6. Use aggregate functions like sum(), average(), count()
-            7. Sort by a certain field
-            8. Map data fields to visual encoding channels like x, y, color, shape.
-            9. Set scale types and configure axes, legends as required.
-            10. Validate that the spec matches the question and refactor if needed.
-            11. Return the finished Vega-Lite JSON chart specification.
+            1. Understand the data context and the specific question.\n
+            2. Identify the key fields in the dataset that need to be visualized.\n
+            3. Choose the appropriate chart type (bar, line, scatter, etc.) based on the task.\n
+            4. Set basic chart parameters like width, height, title, and axes labels.\n
+            5. Apply necessary transformations:\n
+            - Use aggregate functions like sum(), average(), count() where needed.\n
+            - Sort or filter the data to highlight key aspects.\n
+            6. Map data fields to visual encoding channels such as x, y, color, shape.\n
+            7. Configure scales and axes properly, customize legends as required.\n
+            8. Validate the JSON structure to ensure it is correct and there are no syntax errors.\n
+            9. Refactor the specification if needed to align closely with the visualization goal.\n
+            10. Return the completed Vega-Lite JSON chart specification.\n
+
 
             previous conversation: \
             {history}
