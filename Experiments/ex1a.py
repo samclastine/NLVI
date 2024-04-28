@@ -45,6 +45,16 @@ Vega-lite Json: """
             return
         return result
 
+    def append_result(self, result):
+      # Define the set of required keys
+      required_keys = {"datafile", "query", "actual", "predicted", "gpt_eval_score", "jcomp_score", "bleu1_score", "bleu2_score", "rouge1_score", "rouge2_score", "error"}
+      
+      # Fill in missing keys with default None values
+      for key in required_keys:
+          if key not in result:
+              result[key] = None
+      self.results.append(result)
+
     def generate(self, query, dataFile, truth):
         pred_str = None
         truth_str =  None
@@ -81,7 +91,7 @@ Vega-lite Json: """
 
             try:
                 truth = truth.replace('true', 'True')
-                truth_json = json.loads(truth)
+                truth_json = ast.literal_eval(truth)
                 truth_json['data'].clear()
                 truth_json['data']['url'] = data_url
                 truth_str = json.dumps(truth_json)
@@ -95,7 +105,7 @@ Vega-lite Json: """
                     "predicted": pred_str,
                     "error": "Error parsing Truth JSON:" + str(e)
                 }
-                self.results.append(eval_result)
+                self.append_result(eval_result)
                 return self.results
 
 
@@ -113,9 +123,9 @@ Vega-lite Json: """
 
                     jcomp = JSONComparator(pred_json, truth_json)
                     jcomp_score = jcomp.evaluate_json()
-                    bleu1_score = Bleu_1_score(predicted, truth)
+                    bleu1_score = Bleu_1_score(pred_str, truth_str)
                     bleu1_score = bleu1_score.evaluate_bleu()
-                    bleu2_score = bleu_2_score(predicted, truth)
+                    bleu2_score = bleu_2_score(pred_str, truth_str)
                     bleu2_score = bleu2_score.evaluate_bleu()
                     rouge1_score = rouge_1_score(pred_json, truth_json)
                     rouge1_score = rouge1_score.evaluate_rouge()
@@ -145,7 +155,7 @@ Vega-lite Json: """
                                 "rouge2_score": rouge2_score,
                                 "error": _error
                             }
-                            self.results.append(eval_result)
+                            self.append_result(eval_result)
                             return self.results
 
                         except ValueError as e:
@@ -170,7 +180,7 @@ Vega-lite Json: """
                             "predicted": pred_str,
                             "error": "Error parsing JSON" + str(e)
                             }
-                    self.results.append(eval_result)
+                    self.append_result(eval_result)
                     print(f"Error parsing JSON: {str(e)}")
                     return self.results
             except (SyntaxError, ValueError):
@@ -200,8 +210,8 @@ Vega-lite Json: """
 
     def run_evaluation(self, queries_df):
         for index, row in queries_df.iterrows():
-            # if index == 50:
-            #     break
+            if index == 5:
+                break
             query = row['Utterance Set']
             vlSpec_output = row['VegaLiteSpec']
             Datafile = row['dataset'].lower()

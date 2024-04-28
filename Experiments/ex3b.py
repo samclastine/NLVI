@@ -99,7 +99,15 @@ class VegaLiteEvaluator_EX3B:
             return result
         except(SyntaxError, ValueError) as e:
             print(f"Error in visQA chain func: {str(e)}")
-
+    def append_result(self, result):
+      # Define the set of required keys
+      required_keys = {"datafile", "query", "actual", "predicted", "gpt_eval_score", "jcomp_score", "bleu1_score", "bleu2_score", "rouge1_score", "rouge2_score", "error"}
+      
+      # Fill in missing keys with default None values
+      for key in required_keys:
+          if key not in result:
+              result[key] = None
+      self.results.append(result)
 
     def generate(self, query, dataFile, truth):
         try:
@@ -122,7 +130,7 @@ class VegaLiteEvaluator_EX3B:
                     "predicted": pred,
                     "error": "Error parsing Truth JSON:" + str(e)
                 }
-                self.results.append(eval_result)
+                self.append_result(eval_result)
                 return self.results
 
             # Ensure 'pred' and 'truth' are valid JSON strings
@@ -140,9 +148,9 @@ class VegaLiteEvaluator_EX3B:
 
                     jcomp = JSONComparator(pred_json, truth_json)
                     jcomp_score = jcomp.evaluate_json()
-                    bleu1_score = Bleu_1_score(pred, truth)
+                    bleu1_score = Bleu_1_score(pred_str, truth_str)
                     bleu1_score = bleu1_score.evaluate_bleu()
-                    bleu2_score = bleu_2_score(pred, truth)
+                    bleu2_score = bleu_2_score(pred_str, truth_str)
                     bleu2_score = bleu2_score.evaluate_bleu()
                     rouge1_score = rouge_1_score(pred_json, truth_json)
                     rouge1_score = rouge1_score.evaluate_rouge()
@@ -172,15 +180,16 @@ class VegaLiteEvaluator_EX3B:
                                 "rouge2_score": rouge2_score,
                                 "error": _error
                             }
-                            self.results.append(eval_result)
+                            self.append_result(eval_result)
                         except ValueError as e:
                             eval_result = {
                             "datafile": dataFile,
                             "query": query,
-                            "predicted": pred,
+                            "actual": truth_str,
+                            "predicted": pred_str,
                             "error": "Error evaluating content" + str(e)
                             }
-                            self.results.append(eval_result)
+                            self.append_result(eval_result)
                             print(f"Error evaluating content: {str(e)}")
                             return self.results
                     else:
@@ -196,7 +205,7 @@ class VegaLiteEvaluator_EX3B:
                             "predicted": pred_str,
                             "error": "Error parsing JSON" + str(e)
                             }
-                    self.results.append(eval_result)
+                    self.append_result(eval_result)
                     print(f"Error parsing JSON: {str(e)}")
                     return self.results
             except (SyntaxError, ValueError):
