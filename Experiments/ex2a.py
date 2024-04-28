@@ -44,7 +44,6 @@ Vega-lite Json: """
         self.VIS_CHAIN_PROMPT = PromptTemplate(input_variables=["history", "question"], template=self.visualization_template)
         self.results = []
         self.temperatures = [0, 0.3, 0.7, 1]
-        self.llm = initialize_evllm(model_id= self.model_id, temperature=0)
         self.data_url = None
         self.memory = ConversationBufferWindowMemory(
                 memory_key="history",
@@ -82,7 +81,7 @@ Vega-lite Json: """
 
     def append_result(self, result):
       # Define the set of required keys
-      required_keys = {"datafile", "query", "actual", "predicted", "gpt_eval_score", "jcomp_score", "bleu1_score", "bleu2_score", "rouge1_score", "rouge2_score", "error"}
+      required_keys = {"temperature", "datafile", "query", "actual", "predicted", "gpt_eval_score", "jcomp_score", "bleu1_score", "bleu2_score", "rouge1_score", "rouge2_score", "error"}
       
       # Fill in missing keys with default None values
       for key in required_keys:
@@ -108,6 +107,7 @@ Vega-lite Json: """
             except (SyntaxError, ValueError) as e:
                 print(f"Error parsing JSON: {str(e)}")
                 eval_result = {
+                    "temperature": temperature,
                     "datafile": dataFile,
                     "query": query,
                     "actual": truth,
@@ -168,6 +168,7 @@ Vega-lite Json: """
                             self.append_result(eval_result)
                         except ValueError as e:
                             eval_result = {
+                            "temperature": temperature,
                             "datafile": dataFile,
                             "query": query,
                             "predicted": pred_str,
@@ -184,10 +185,11 @@ Vega-lite Json: """
                 except (SyntaxError, ValueError) as e:
                     print(f"Error parsing JSON: {str(e)}")
                     eval_result = {
+                            "temperature": temperature,
                             "datafile": dataFile,
                             "query": query,
-                            "actual": truth_str,
-                            "predicted": pred_str,
+                            "actual": truth,
+                            "predicted": pred,
                             "error": "Error parsing JSON" + str(e)
                             }
                     self.append_result(eval_result)
@@ -197,6 +199,7 @@ Vega-lite Json: """
                 print("Invalid JSON in 'pred'")
         except (SyntaxError, ValueError):
             print("Invalid JSON")
+            return False
 
     def write_to_csv(self):
         # Ensure there are results to write
@@ -223,13 +226,15 @@ Vega-lite Json: """
             self.llm = initialize_evllm(model_id= self.model_id, temperature=t)
             
             for index, row in queries_df.iterrows():
-                if index == 2:
-                    break
+                # if index == 2:
+                #     break
                 query = row['Utterance Set']
                 vlSpec_output = row['VegaLiteSpec']
                 Datafile = row['dataset'].lower()
                 # vlSpec_output = vlSpec_output.replace('true', 'True')
                 # vlSpec_output = vlSpec_output.replace("'", '"')
-                self.generate(query, Datafile, vlSpec_output, t)
+                result = self.generate(query, Datafile, vlSpec_output, t)
+                if not result:
+                    continue
             self.write_to_csv()
         return "Evaluation Process Completed!!!"

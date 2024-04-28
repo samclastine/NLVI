@@ -112,6 +112,9 @@ class VegaLiteEvaluator_EX3B:
     def generate(self, query, dataFile, truth):
         try:
             predicted = self.visQA_chain(dataFile,query)
+            if predicted is None:
+                print("The variable 'pred' is None. Check the data source or previous computations.")
+
             pred = predicted
 
             try:
@@ -201,8 +204,8 @@ class VegaLiteEvaluator_EX3B:
                     eval_result = {
                             "datafile": dataFile,
                             "query": query,
-                            "actual": truth_str,
-                            "predicted": pred_str,
+                            "actual": truth,
+                            "predicted": pred,
                             "error": "Error parsing JSON" + str(e)
                             }
                     self.append_result(eval_result)
@@ -210,8 +213,9 @@ class VegaLiteEvaluator_EX3B:
                     return self.results
             except (SyntaxError, ValueError):
                 print("Invalid JSON in 'pred'")
-        except (SyntaxError, ValueError):
-            print("Invalid JSON")
+        except (SyntaxError, ValueError) as e:
+            print(f"An error occurred: {e}")
+            return False
 
     def write_to_csv(self):
         # Ensure there are results to write
@@ -240,6 +244,8 @@ class VegaLiteEvaluator_EX3B:
             query = row['Utterance Set']
             vlSpec_output = row['VegaLiteSpec']
             Datafile = row['dataset'].lower()
-            self.generate(query, Datafile, vlSpec_output)
+            result = self.generate(query, Datafile, vlSpec_output)
+            if not result:
+                continue
         self.write_to_csv()
         return "Evaluation Process Completed!!!"

@@ -183,7 +183,7 @@ Vega-lite Json: """
                     eval_result = {
                             "datafile": dataFile,
                             "query": query,
-                            "actual": truth_str,
+                            "actual": truth,
                             "predicted": pred,
                             "error": "Error parsing JSON" + str(e)
                             }
@@ -194,6 +194,7 @@ Vega-lite Json: """
                 print("Invalid JSON in 'pred'")
         except (SyntaxError, ValueError):
             print("Invalid JSON")
+            return False
 
     def write_to_csv(self):
         # Ensure there are results to write
@@ -222,6 +223,8 @@ Vega-lite Json: """
             query = row['Utterance Set']
             vlSpec_output = row['VegaLiteSpec']
             Datafile = row['dataset'].lower()
-            self.generate(query, Datafile, vlSpec_output)
+            result = self.generate(query, Datafile, vlSpec_output)
+            if not result:
+                continue
         self.write_to_csv()
         return "Evaluation Process Completed!!!"

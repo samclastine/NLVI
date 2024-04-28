@@ -198,7 +198,7 @@ class VegaLiteEvaluator_EX3A:
                             "datafile": dataFile,
                             "query": query,
                             "actual": truth_str,
-                            "predicted": pred,
+                            "predicted": pred_str,
                             "error": "Error evaluating content" + str(e)
                             }
                             self.append_result(eval_result)
@@ -212,8 +212,8 @@ class VegaLiteEvaluator_EX3A:
                     eval_result = {
                             "datafile": dataFile,
                             "query": query,
-                            "predicted": pred_str,
-                            "actual": truth_str,
+                            "predicted": pred,
+                            "actual": truth,
                             "error": "Error parsing JSON" + str(e)
                             }
                     self.append_result(eval_result)
@@ -222,6 +222,7 @@ class VegaLiteEvaluator_EX3A:
                 print("Invalid JSON in 'pred'")
         except (SyntaxError, ValueError):
             print("Invalid JSON")
+            return False
 
     def write_to_csv(self):
         # Ensure there are results to write
@@ -250,6 +251,10 @@ class VegaLiteEvaluator_EX3A:
             query = row['Utterance Set']
             vlSpec_output = row['VegaLiteSpec']
             Datafile = row['dataset'].lower()
-            self.generate(query, Datafile, vlSpec_output)
+            result = self.generate(query, Datafile, vlSpec_output)
+            if not result:
+                continue
+            
+            
         self.write_to_csv()
         return "Evaluation Process Completed!!!"
