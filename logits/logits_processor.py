@@ -46,7 +46,7 @@ class Encoding(BaseModel):
     column: Optional[EncodingChannel] = "null"
 
 class Transform(BaseModel):
-    pass
+    filter: Optional[str] = "null"
 
 class VegaLiteSchema(BaseModel):
     description: Optional[str] = "null"
