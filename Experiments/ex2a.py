@@ -151,6 +151,12 @@ Vega-lite Json: """
                     if isinstance(content, str):
                         try:
                             gptScore = ast.literal_eval(content)
+                            gptScore = ast.literal_eval(content)
+                            if isinstance(gptScore, dict) and 'Score' in gptScore:
+                                gpt_score = gptScore['Score']
+                            else:
+                                gpt_score = None  # or some other error handling
+
                             print("Evaluated Score:", gptScore)
                             eval_result = {
                                 "temperature": temperature,
@@ -158,7 +164,7 @@ Vega-lite Json: """
                                 "query": query,
                                 "actual": truth_str,
                                 "predicted": pred_str,
-                                "gpt_eval_score": gptScore['Score'],
+                                "gpt_eval_score": gpt_score,
                                 "jcomp_score": jcomp_score,
                                 "bleu1_score": bleu1_score,
                                 "bleu2_score": bleu2_score,
