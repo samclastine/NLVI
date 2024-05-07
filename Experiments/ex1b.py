@@ -144,31 +144,31 @@ Vega-lite Json: """
                     content = eval_response.choices[0].message.content
 
                     # Check the type of the content and handle it accordingly
-                    if isinstance(content, str):
-                        try:
-                            gptScore = ast.literal_eval(content)
-                            if isinstance(gptScore, dict) and 'Score' in gptScore:
-                                gpt_score = gptScore['Score']
-                            else:
-                                gpt_score = None  # or some other error handling
+                    # if isinstance(content, str):
+                    try:
+                    #     gptScore = ast.literal_eval(content)
+                    #     if isinstance(gptScore, dict) and 'Score' in gptScore:
+                    #         gpt_score = gptScore['Score']
+                    #     else:
+                    #         gpt_score = None  # or some other error handling
 
-                            print("Evaluated Score:", gptScore)
-                            eval_result = {
-                                "datafile": dataFile,
-                                "query": query,
-                                "actual": truth_str,
-                                "predicted": pred_str,
-                                "gpt_eval_score": gpt_score,
-                                "jcomp_score": jcomp_score,
-                                "bleu1_score": bleu1_score,
-                                "bleu2_score": bleu2_score,
-                                "rouge1_score": rouge1_score,
-                                "rouge2_score": rouge2_score,
-                                "error": _error
-                            }
-                            self.append_result(eval_result)
-                            return self.results
-                        except ValueError as e:
+                    #     print("Evaluated Score:", gptScore)
+                        eval_result = {
+                            "datafile": dataFile,
+                            "query": query,
+                            "actual": truth_str,
+                            "predicted": pred_str,
+                            # "gpt_eval_score": gpt_score,
+                            "jcomp_score": jcomp_score,
+                            "bleu1_score": bleu1_score,
+                            "bleu2_score": bleu2_score,
+                            "rouge1_score": rouge1_score,
+                            "rouge2_score": rouge2_score,
+                            "error": _error
+                        }
+                        self.append_result(eval_result)
+                        return self.results
+                    except ValueError as e:
                             eval_result = {
                             "datafile": dataFile,
                             "query": query,
@@ -179,9 +179,9 @@ Vega-lite Json: """
                             self.append_result(eval_result)
                             print(f"Error evaluating content: {str(e)}")
                             return self.results
-                    else:
-                        # If content is not a string, handle the integer or other types as needed
-                        print(f"Content is not a string, but a {type(content).__name__}: {content}")
+                    # else:
+                    #     # If content is not a string, handle the integer or other types as needed
+                    #     print(f"Content is not a string, but a {type(content).__name__}: {content}")
 
                 except (SyntaxError, ValueError) as e:
                     print(f"Error parsing JSON: {str(e)}")
