@@ -138,10 +138,10 @@ Vega-lite Json: """
                     rouge2_score = rouge_2_score(pred_json, truth_json)
                     rouge2_score = rouge2_score.evaluate_rouge()
 
-                    eval_response = self.evaluator.run(query, dataFile, pred_str)
+                    # eval_response = self.evaluator.run(query, dataFile, pred_str)
 
-                    # Access the content
-                    content = eval_response.choices[0].message.content
+                    # # Access the content
+                    # content = eval_response.choices[0].message.content
 
                     # Check the type of the content and handle it accordingly
                     # if isinstance(content, str):
