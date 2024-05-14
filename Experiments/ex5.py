@@ -81,7 +81,7 @@ class VegaLiteEvaluator_EX5:
                 chunk_size=1000, chunk_overlap=0
             )
             csv_docs = csv_text_splitter.split_documents(csv_data)
-            embeddings = OpenAIEmbeddings()
+            embeddings = OpenAIEmbeddings(model= "text-embedding-3-small")
             csv_retriever = FAISS.from_documents(csv_docs, embeddings).as_retriever()
             vis_chain = RetrievalQA.from_chain_type(
                 self.llm,
