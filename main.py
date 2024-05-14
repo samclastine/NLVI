@@ -16,48 +16,49 @@ def setup_arg_parser():
     parser.add_argument('--modelID', type=str, help='Model identifier')
     parser.add_argument('--openaiAPI', type=str, help='openai api authentication code')
     parser.add_argument('--model_dir', type=str, help='Folder directory for the model has to save')
+    parser.add_argument('--mode', type=str, help='value has to set "openai" or "hf')
     return parser
 
 
-def run_experiment(exp_name, result_filename, model_id):
+def run_experiment(exp_name, result_filename, model_id, mode):
     if exp_name=='ex1a':
         logging.info(f"Running {exp_name} with model {model_id}")
-        evaluator = VegaLiteEvaluator_EX1A(model_id=model_id, output_filename=result_filename)
+        evaluator = VegaLiteEvaluator_EX1A(model_id=model_id, output_filename=result_filename, mode=mode)
         result = evaluator.run_evaluation(nlvCorpus)
         print(result)
     if exp_name=='ex1b':
         logging.info(f"Running {exp_name} with model {model_id}")
-        evaluator = VegaLiteEvaluator_EX1B(model_id=model_id, output_filename=result_filename)
+        evaluator = VegaLiteEvaluator_EX1B(model_id=model_id, output_filename=result_filename, mode=mode)
         result = evaluator.run_evaluation(nlvCorpus)
         print(result)
     if exp_name=='ex2a':
         logging.info(f"Running {exp_name} with model {model_id}")
-        evaluator = VegaLiteEvaluator_EX2A(model_id=model_id, output_filename=result_filename)
+        evaluator = VegaLiteEvaluator_EX2A(model_id=model_id, output_filename=result_filename, mode=mode)
         result = evaluator.run_evaluation(nlvCorpus)
         print(result)
     if exp_name=='ex3a':
         logging.info(f"Running {exp_name} with model {model_id}")
-        evaluator = VegaLiteEvaluator_EX3A(model_id=model_id, output_filename=result_filename)
+        evaluator = VegaLiteEvaluator_EX3A(model_id=model_id, output_filename=result_filename, mode=mode)
         result = evaluator.run_evaluation(nlvCorpus)
         print(result)
     if exp_name=='ex3b':
         logging.info(f"Running {exp_name} with model {model_id}")
-        evaluator = VegaLiteEvaluator_EX3B(model_id=model_id, output_filename=result_filename)
+        evaluator = VegaLiteEvaluator_EX3B(model_id=model_id, output_filename=result_filename, mode=mode)
         result = evaluator.run_evaluation(nlvCorpus)
         print(result)
     if exp_name=='ex4a':
         logging.info(f"Running {exp_name} with model {model_id}")
-        evaluator = VegaLiteEvaluator_EX4A(model_id=model_id, output_filename=result_filename)
+        evaluator = VegaLiteEvaluator_EX4A(model_id=model_id, output_filename=result_filename, mode=mode)
         result = evaluator.run_evaluation(nlvCorpus)
         print(result)
     if exp_name=='ex4b':
         logging.info(f"Running {exp_name} with model {model_id}")
-        evaluator = VegaLiteEvaluator_EX4B(model_id=model_id, output_filename=result_filename)
+        evaluator = VegaLiteEvaluator_EX4B(model_id=model_id, output_filename=result_filename, mode=mode)
         result = evaluator.run_evaluation(nlvCorpus)
         print(result)
     if exp_name=='ex5':
         logging.info(f"Running {exp_name} with model {model_id}")
-        evaluator = VegaLiteEvaluator_EX5(model_id=model_id, output_filename=result_filename)
+        evaluator = VegaLiteEvaluator_EX5(model_id=model_id, output_filename=result_filename, mode=mode)
         result = evaluator.run_evaluation(nlvCorpus)
         print(result)
         
@@ -67,10 +68,10 @@ def run_experiment(exp_name, result_filename, model_id):
 def main():
     parser = setup_arg_parser()
     args = parser.parse_args()
-    if args.exp and args.output and args.modelID and args.openaiAPI and args.model_dir:
+    if args.exp and args.output and args.modelID and args.openaiAPI and args.model_dir and args.mode:
       os.environ["OPENAI_API_KEY"] = args.openaiAPI
       config.model_dir = args.model_dir
-      run_experiment(args.exp, args.output, args.modelID)
+      run_experiment(args.exp, args.output, args.modelID, args.mode)
     else:
         print("Missing arguments, please specify --exp, --output, --openaiAPI and --modelID.")
 
