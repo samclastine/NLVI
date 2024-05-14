@@ -25,18 +25,23 @@ import urllib
 from langchain.chains import ConversationalRetrievalChain
 from langchain.chains import SequentialChain
 
-from models import initialize_evllm
+from models import initialize_evllm, initialize_openai_model
+
 warnings.filterwarnings('ignore')
 
 
 
 
 class VegaLiteEvaluator_EX4B:
-    def __init__(self, model_id, output_filename="/output.csv"):
+    def __init__(self, model_id, output_filename="/output.csv", mode="openai"):
         self.model_id = model_id
+        self.mode = mode
         self.evaluator = GPTEvaluator()
         self.output_filename = output_filename
-        self.llm = initialize_evllm(model_id= self.model_id, temperature=0.3)
+        if self.mode == "hf":
+            self.llm = initialize_evllm(model_id=self.model_id, temperature=0.3)
+        elif self.mode == "openai":
+            self.llm = initialize_openai_model(model_id=self.model_id, temperature=0.3)
         self.CoT_chain_template = """/
         Generate Vegalite JSON Specification for given question. \n
 

@@ -28,7 +28,7 @@ from langchain.embeddings import OpenAIEmbeddings
 from langchain.prompts import FewShotPromptTemplate, PromptTemplate
 from langchain.chains import ConversationalRetrievalChain
 
-from models import initialize_evllm
+from models import initialize_evllm, initialize_openai_model
 warnings.filterwarnings('ignore')
 
 
@@ -46,8 +46,9 @@ examples = [
     ]
 
 class VegaLiteEvaluator_EX3A:
-    def __init__(self, model_id, output_filename="/output.csv"):
+    def __init__(self, model_id, output_filename="/output.csv", mode="openai"):
         self.model_id = model_id
+        self.mode = mode
         self.evaluator = GPTEvaluator()
         self.output_filename = output_filename
         self.results = []
@@ -72,7 +73,10 @@ class VegaLiteEvaluator_EX3A:
         )
 
 
-        self.llm = initialize_evllm(model_id= self.model_id, temperature=0.3)
+        if self.mode == "hf":
+            self.llm = initialize_evllm(model_id=self.model_id, temperature=0.3)
+        elif self.mode == "openai":
+            self.llm = initialize_openai_model(model_id=self.model_id, temperature=0.3)
         self.data_url = None
         self.memory = ConversationBufferWindowMemory(
             memory_key="chat_history",

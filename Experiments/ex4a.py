@@ -23,15 +23,17 @@ from langchain.prompts import (
 from Evaluator import Bleu_1_score, bleu_2_score, rouge_1_score, rouge_2_score, GPTEvaluator, JSONComparator
 import urllib
 warnings.filterwarnings('ignore')
-from models import initialize_evllm
-
-
+from models import initialize_evllm, initialize_openai_model
 
 class VegaLiteEvaluator_EX4A:
-    def __init__(self, model_id, output_filename="/output.csv"):
+    def __init__(self, model_id, output_filename="/output.csv", mode="openai"):
         self.model_id = model_id
+        self.mode = mode
         self.evaluator = GPTEvaluator()
-        self.llm = initialize_evllm(model_id= self.model_id, temperature=0.3)
+        if self.mode == "hf":
+            self.llm = initialize_evllm(model_id=self.model_id, temperature=0.3)
+        elif self.mode == "openai":
+            self.llm = initialize_openai_model(model_id=self.model_id, temperature=0.3)
         self.output_filename = output_filename
         self.visualization_template = """/
 Generate Vegalite JSON Specification for given question. \n \n

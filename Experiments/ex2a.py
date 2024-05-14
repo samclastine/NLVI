@@ -23,14 +23,15 @@ from langchain.prompts import (
 from Evaluator import Bleu_1_score, bleu_2_score, rouge_1_score, rouge_2_score, GPTEvaluator, JSONComparator
 import urllib
 warnings.filterwarnings('ignore')
-from models import initialize_evllm
+from models import initialize_evllm, initialize_openai_model
 import gc
 import torch
 
 
 class VegaLiteEvaluator_EX2A:
-    def __init__(self, model_id, output_filename="/output.csv"):
+    def __init__(self, model_id, output_filename="/output.csv", mode="openai"):
         self.model_id = model_id
+        self.mode = mode
         self.evaluator = GPTEvaluator()
         self.output_filename = output_filename
         self.visualization_template = """/
@@ -230,7 +231,10 @@ Vega-lite Json: """
 
     def run_evaluation(self, queries_df):
         for t in self.temperatures:
-            self.llm = initialize_evllm(model_id= self.model_id, temperature=t)
+            if self.mode == "hf":
+                self.llm = initialize_evllm(model_id=self.model_id, temperature=0)
+            elif self.mode == "openai":
+                self.llm = initialize_openai_model(model_id=self.model_id, temperature=0)
             
             for index, row in queries_df.iterrows():
                 # if index == 2:
