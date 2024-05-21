@@ -160,7 +160,6 @@ Vega-lite Json: """
                             "query": query,
                             "actual": truth_str,
                             "predicted": pred_str,
-                            "gpt_eval_score": gpt_score,
                             "jcomp_score": jcomp_score,
                             "bleu1_score": bleu1_score,
                             "bleu2_score": bleu2_score,

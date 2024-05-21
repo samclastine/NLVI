@@ -152,7 +152,6 @@ Vega-lite Json: """
                             "query": query,
                             "actual": truth_str,
                             "predicted": pred_str,
-                            # "gpt_eval_score": gptScore['Score'],
                             "jcomp_score": jcomp_score,
                             "bleu1_score": bleu1_score,
                             "bleu2_score": bleu2_score,
@@ -216,8 +215,8 @@ Vega-lite Json: """
 
     def run_evaluation(self, queries_df):
         for index, row in queries_df.iterrows():
-            if index == 5:
-                break
+            # if index == 5:
+            #     break
             query = row['Utterance Set']
             vlSpec_output = row['VegaLiteSpec']
             Datafile = row['dataset'].lower()
