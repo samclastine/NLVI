@@ -63,9 +63,10 @@ Vega-lite Json: """
     def generate(self, query, dataFile, truth):
         pred_str = None
         truth_str =  None
+        predicted = self.visQA_chain(query)
         if predicted:
             try:
-                predicted = self.visQA_chain(query)
+                
                 print("predicted", predicted)
                 pred = predicted
                 # try:
