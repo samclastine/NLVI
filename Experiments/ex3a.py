@@ -130,12 +130,10 @@ class VegaLiteEvaluator_EX3A:
             predicted = self.visQA_chain(dataFile,query)
             pred = predicted
             try:
-                truth = truth.replace('true', 'True')
                 truth_json = ast.literal_eval(truth)
                 truth_json['data'].clear()
                 truth_json['data']['url'] = self.data_url
                 truth_str = json.dumps(truth_json)
-                truth_str = truth_str.replace('True', 'true')
             except (SyntaxError, ValueError) as e:
                 print(f"Error parsing JSON: {str(e)}")
                 eval_result = {
@@ -155,7 +153,10 @@ class VegaLiteEvaluator_EX3A:
                 try:
                     pred = pred.replace('true', 'True')
                     pred_json = json.loads(pred)
-                    pred_json['data'].clear()
+                    if 'data' in pred_json:
+                        pred_json['data'].clear()
+                    else:
+                        pred_json['data'] = {}
                     pred_json['data']['url'] = self.data_url
                     pred_str = json.dumps(pred_json)
                     pred_str = pred_str.replace('True', 'true')

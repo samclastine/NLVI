@@ -146,7 +146,10 @@ class VegaLiteEvaluator_EX3B:
                 try:
                     pred = pred.replace('true', 'True')
                     pred_json = json.loads(pred)
-                    pred_json['data'].clear()
+                    if 'data' in pred_json:
+                        pred_json['data'].clear()
+                    else:
+                        pred_json['data'] = {}
                     pred_json['data']['url'] = self.data_url
                     pred_str = json.dumps(pred_json)
                     pred_str = pred_str.replace('True', 'true')
