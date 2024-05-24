@@ -115,28 +115,27 @@ class VegaLiteEvaluator_EX3B:
     def generate(self, query, dataFile, truth):
         try:
             predicted = self.visQA_chain(dataFile,query)
-            if predicted is None:
-                print("The variable 'pred' is None. Check the data source or previous computations.")
+            if predicted:
+                pred = predicted
 
-            pred = predicted
-
-            try:
-                truth_json = ast.literal_eval(truth)
-                truth_json['data'].clear()
-                truth_json['data']['url'] = self.data_url
-                truth_str = json.dumps(truth_json)
-            except (SyntaxError, ValueError) as e:
-                print(f"Error parsing JSON: {str(e)}")
-                eval_result = {
-                    "datafile": dataFile,
-                    "query": query,
-                    "actual": truth,
-                    "predicted": pred,
-                    "error": "Error parsing Truth JSON:" + str(e)
-                }
-                self.append_result(eval_result)
-                return self.results
-
+                try:
+                    truth_json = ast.literal_eval(truth)
+                    truth_json['data'].clear()
+                    truth_json['data']['url'] = self.data_url
+                    truth_str = json.dumps(truth_json)
+                except (SyntaxError, ValueError) as e:
+                    print(f"Error parsing JSON: {str(e)}")
+                    eval_result = {
+                        "datafile": dataFile,
+                        "query": query,
+                        "actual": truth,
+                        "predicted": pred,
+                        "error": "Error parsing Truth JSON:" + str(e)
+                    }
+                    self.append_result(eval_result)
+                    return self.results
+            else:
+                return False
             # Ensure 'pred' and 'truth' are valid JSON strings
             try:
                 eval_result = None
