@@ -228,8 +228,10 @@ class VegaLiteEvaluator_EX3A:
                             }
                     self.append_result(eval_result)
                     print(f"Error parsing JSON: {str(e)}")
+                    return False
             except (SyntaxError, ValueError):
                 print("Invalid JSON in 'pred'")
+                return False
         except (SyntaxError, ValueError):
             print("Invalid JSON")
             return False
