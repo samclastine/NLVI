@@ -121,12 +121,10 @@ class VegaLiteEvaluator_EX3B:
             pred = predicted
 
             try:
-                truth = truth.replace('true', 'True')
                 truth_json = ast.literal_eval(truth)
                 truth_json['data'].clear()
                 truth_json['data']['url'] = self.data_url
                 truth_str = json.dumps(truth_json)
-                truth_str = truth_str.replace('True', 'true')
             except (SyntaxError, ValueError) as e:
                 print(f"Error parsing JSON: {str(e)}")
                 eval_result = {
@@ -144,7 +142,6 @@ class VegaLiteEvaluator_EX3B:
                 eval_result = None
                 _error = None
                 try:
-                    pred = pred.replace('true', 'True')
                     pred_json = json.loads(pred)
                     if 'data' in pred_json:
                         pred_json['data'].clear()
@@ -152,7 +149,6 @@ class VegaLiteEvaluator_EX3B:
                         pred_json['data'] = {}
                     pred_json['data']['url'] = self.data_url
                     pred_str = json.dumps(pred_json)
-                    pred_str = pred_str.replace('True', 'true')
 
 
                     jcomp = JSONComparator(pred_json, truth_json)

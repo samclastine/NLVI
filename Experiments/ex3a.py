@@ -152,7 +152,6 @@ class VegaLiteEvaluator_EX3A:
                 eval_result = None
                 _error = None
                 try:
-                    pred = pred.replace('true', 'True')
                     pred_json = json.loads(pred)
                     if 'data' in pred_json:
                         pred_json['data'].clear()
@@ -160,9 +159,6 @@ class VegaLiteEvaluator_EX3A:
                         pred_json['data'] = {}
                     pred_json['data']['url'] = self.data_url
                     pred_str = json.dumps(pred_json)
-                    pred_str = pred_str.replace('True', 'true')
-
-
                     jcomp = JSONComparator(pred_json, truth_json)
                     jcomp_score = jcomp.evaluate_json()
                     bleu1_score = Bleu_1_score(pred_str, truth_str)
