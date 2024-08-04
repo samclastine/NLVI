@@ -25,7 +25,7 @@ import urllib
 from langchain.chains import ConversationalRetrievalChain
 from langchain.chains import SequentialChain
 
-from models import initialize_evllm, initialize_openai_model
+from models import initialize_evllm, initialize_openai_model, initialize_vllm
 
 warnings.filterwarnings('ignore')
 
@@ -33,12 +33,14 @@ warnings.filterwarnings('ignore')
 
 
 class VegaLiteEvaluator_EX4B:
-    def __init__(self, model_id, output_filename="/output.csv", mode="openai"):
+    def __init__(self, model_id, output_filename="/output.csv", mode="openai", JsonEnforcer= 'False'):
         self.model_id = model_id
         self.mode = mode
         self.evaluator = GPTEvaluator()
         self.output_filename = output_filename
-        if self.mode == "hf":
+        if self.mode == "hf" and JsonEnforcer == 'False':
+            self.llm = initialize_vllm(model_id=self.model_id, temperature=0.3)
+        if self.mode == "hf" and JsonEnforcer == 'True':
             self.llm = initialize_evllm(model_id=self.model_id, temperature=0.3)
         elif self.mode == "openai":
             self.llm = initialize_openai_model(model_id=self.model_id, temperature=0.3)
@@ -67,10 +69,12 @@ class VegaLiteEvaluator_EX4B:
         self.zero_CHAIN_PROMPT = PromptTemplate(input_variables=["cot_output","context"], template= self.zero_shot_chain_template)
         self.results = []
         self.data_url = None
+        self.res = 'not'
         self.memory = ConversationBufferWindowMemory(
             memory_key="chat_history",
             k=1,
             input_key='question',
+            output_key="answer",
             return_messages=True
         )
     def visQA_chain(self, dataFile, input):
@@ -105,14 +109,22 @@ class VegaLiteEvaluator_EX4B:
                 chain_type="stuff",
                 combine_docs_chain_kwargs={"prompt": self.zero_CHAIN_PROMPT},
                 verbose= True,
-                output_key= "result",
+                output_key='answer',
                 )
             overall_chain = SequentialChain(chains=[vis_cot_chain, vis_zero_chain], input_variables= ['question', 'chat_history'],output_variables=["cot_output","result"],  verbose=True)
             result = overall_chain({"question": input,'chat_history':''})
-            result = result["result"]
-            return result
+            self.res = result
+            return self.res
         except(SyntaxError, ValueError) as e:
             print(f"Error in visQA chain func: {str(e)}")
+            eval_result = {
+                  "datafile": dataFile,
+                  "query": input,
+                  "result": self.res,
+                  "error": "Error" + str(e)
+              }
+            self.append_result(eval_result)
+            
 
     def append_result(self, result):
       # Define the set of required keys
@@ -123,15 +135,17 @@ class VegaLiteEvaluator_EX4B:
           if key not in result:
               result[key] = None
       self.results.append(result)
+
+
+
     def generate(self, query, dataFile, truth):
         pred_str = None
         truth_str =  None
         try:
             predicted = self.visQA_chain(dataFile,query)
-            pred = predicted
+            pred = predicted["answer"]
 
             try:
-                truth = truth.replace('true', 'True')
                 truth_json = ast.literal_eval(truth)
                 truth_json['data'].clear()
                 truth_json['data']['url'] = self.data_url
@@ -144,6 +158,7 @@ class VegaLiteEvaluator_EX4B:
                     "query": query,
                     "actual": truth_str,
                     "predicted": pred,
+                    "result": predicted,
                     "error": "Error parsing Truth JSON:" + str(e)
                 }
                 self.append_result(eval_result)
@@ -154,7 +169,6 @@ class VegaLiteEvaluator_EX4B:
                 eval_result = None
                 _error = None
                 try:
-                    pred = pred.replace('true', 'True')
                     pred_json = json.loads(pred)
                     if 'data' in pred_json:
                         pred_json['data'].clear()
@@ -162,7 +176,6 @@ class VegaLiteEvaluator_EX4B:
                         pred_json['data'] = {}
                     pred_json['data']['url'] = self.data_url
                     pred_str = json.dumps(pred_json)
-                    pred_str = pred_str.replace('True', 'true')
 
 
                     jcomp = JSONComparator(pred_json, truth_json)
@@ -201,6 +214,7 @@ class VegaLiteEvaluator_EX4B:
                             "bleu2_score": bleu2_score,
                             "rouge1_score": rouge1_score,
                             "rouge2_score": rouge2_score,
+                            "result": predicted,
                             "error": _error
                         }
                         self.append_result(eval_result)
@@ -210,6 +224,7 @@ class VegaLiteEvaluator_EX4B:
                             "query": query,
                             "actual": truth_str,
                             "predicted": pred_str,
+                            "result": predicted,
                             "error": "Error evaluating content" + str(e)
                             }
                             self.append_result(eval_result)
@@ -233,8 +248,22 @@ class VegaLiteEvaluator_EX4B:
                     return self.results
             except (SyntaxError, ValueError):
                 print("Invalid JSON in 'pred'")
+                eval_result = {
+                          "datafile": dataFile,
+                          "query": query,
+                          "result": predicted,
+                          "error": "Error" + str(e)
+                      }
+                self.append_result(eval_result)
         except (SyntaxError, ValueError):
             print("Invalid JSON")
+            eval_result = {
+                          "datafile": dataFile,
+                          "query": query,
+                          "result": predicted,
+                          "error": "Error" + str(e)
+                      }
+            self.append_result(eval_result)
             return False
 
     def write_to_csv(self):

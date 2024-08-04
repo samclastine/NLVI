@@ -13,13 +13,13 @@ from langchain.prompts import (
 )
 from Evaluator import Bleu_1_score, bleu_2_score, rouge_1_score, rouge_2_score, GPTEvaluator, JSONComparator
 
-from models import initialize_evllm, initialize_openai_model
+from models import initialize_evllm, initialize_openai_model, initialize_vllm
 
 
 warnings.filterwarnings('ignore')
 
 class VegaLiteEvaluator_EX1A:
-    def __init__(self, model_id, output_filename="output.csv", mode="openai"):
+    def __init__(self, model_id, output_filename="output.csv", mode="openai" , JsonEnforcer= 'False'):
         self.model_id = model_id
         self.evaluator = GPTEvaluator()
         self.output_filename = output_filename
@@ -33,8 +33,10 @@ Question: {input}
 Vega-lite Json: """
         self.VIS_CHAIN_PROMPT = PromptTemplate(input_variables=["input"], template=self.visualization_template)
         self.results = []
-        if self.mode == "hf":
-            self.llm = initialize_evllm(model_id=self.model_id, temperature=0)
+        if self.mode == "hf" and JsonEnforcer == 'False':
+            self.llm = initialize_vllm(model_id=self.model_id, temperature=0.3)
+        if self.mode == "hf" and JsonEnforcer == 'True':
+            self.llm = initialize_evllm(model_id=self.model_id, temperature=0.3)
         elif self.mode == "openai":
             self.llm = initialize_openai_model(model_id=self.model_id, temperature=0)
             

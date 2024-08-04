@@ -28,7 +28,7 @@ from langchain.embeddings import OpenAIEmbeddings
 from langchain.prompts import FewShotPromptTemplate, PromptTemplate
 from langchain.chains import ConversationalRetrievalChain
 
-from models import initialize_evllm, initialize_openai_model
+from models import initialize_evllm, initialize_openai_model, initialize_vllm
 warnings.filterwarnings('ignore')
 
 
@@ -46,12 +46,13 @@ examples = [
     ]
 
 class VegaLiteEvaluator_EX3A:
-    def __init__(self, model_id, output_filename="/output.csv", mode="openai"):
+    def __init__(self, model_id, output_filename="/output.csv", mode="openai", JsonEnforcer= 'False'):
         self.model_id = model_id
         self.mode = mode
         self.evaluator = GPTEvaluator()
         self.output_filename = output_filename
         self.results = []
+        self.res = 'not'
         self.shots = [
     {"question": "Please show me how many employees working on different countries using a bar chart, could you list from high to low by the bars?", "output": """{{"$schema": "https://vega.github.io/schema/vega-lite/v4.json", "description": "Number of Employees by Country", "data": {{"url":"https://example.com/data/employees.json"}}, "mark": "bar", "encoding": {{"x": {{"field": "employees", "type": "quantitative", "axis": {{"title": "Number of Employees"}} }}, "y": {{"field": "country", "type": "nominal", "axis": {{"title": "Country"}}, "sort": "-x"  }} }} }}"""},
     {"question": "plot a line chart on what is the average number of attendance at home games for each year?", "output": """{{"$schema": "https://vega.github.io/schema/vega-lite/v4.json", "description": "Average Attendance at Home Games by Year", "data": {{"url":"https://example.com/data/games.json"}}, "mark": "line", "encoding": {{"x": {{"field": "year", "type": "ordinal", "axis": {{"title": "Year"}}}} }}}}, "y": {{"field": "average_attendance", "type": "quantitative", "axis": {{"title": "Average Attendance"}}}} }}}} }}}} }}}}"""},
@@ -73,16 +74,17 @@ class VegaLiteEvaluator_EX3A:
         )
 
 
-        if self.mode == "hf":
+        if self.mode == "hf" and JsonEnforcer == 'False':
+            self.llm = initialize_vllm(model_id=self.model_id, temperature=0.3)
+        if self.mode == "hf" and JsonEnforcer == 'True':
             self.llm = initialize_evllm(model_id=self.model_id, temperature=0.3)
         elif self.mode == "openai":
             self.llm = initialize_openai_model(model_id=self.model_id, temperature=0.3)
         self.data_url = None
-        self.memory = ConversationBufferWindowMemory(
-            memory_key="chat_history",
-            return_messages=True,
-            k=1
-        )
+  
+        self.memory = ConversationBufferWindowMemory(k=1, memory_key="chat_history", output_key="answer", return_messages=True)
+        print(self.memory)
+
         
     def visQA_chain(self, dataFile, input):
         if dataFile == "superstore":
@@ -105,14 +107,24 @@ class VegaLiteEvaluator_EX3A:
                 self.llm,
                 retriever=csv_retriever,
                 combine_docs_chain_kwargs={"prompt": self.FewShotPrompt},
-                memory=self.memory,
+                memory= self.memory,
+                output_key='answer',
                 verbose=True
             )
-            result = vis_chain({"question": input})
-            result = result["answer"]
-            return result
+            self.res = vis_chain({"question": input})
+            # result = result["answer"]
+            return self.res
         except(SyntaxError, ValueError) as e:
             print(f"Error in visQA chain func: {str(e)}")
+            eval_result = {
+                  "datafile": dataFile,
+                  "query": input,
+                  "result": self.res,
+                  "error": "Error" + str(e)
+              }
+            self.append_result(eval_result)
+
+
 
     def append_result(self, result):
       # Define the set of required keys
@@ -129,7 +141,7 @@ class VegaLiteEvaluator_EX3A:
         predicted = self.visQA_chain(dataFile,query)
         try:
            if predicted:
-                pred = predicted
+                pred = predicted["answer"]
                 try:
                     truth_json = ast.literal_eval(truth)
                     truth_json['data'].clear()
@@ -142,6 +154,7 @@ class VegaLiteEvaluator_EX3A:
                         "query": query,
                         "actual": truth,
                         "predicted": pred,
+                        "result": predicted,
                         "error": "Error parsing Truth JSON:" + str(e)
                     }
                     self.append_result(eval_result)
@@ -195,6 +208,7 @@ class VegaLiteEvaluator_EX3A:
                                 "bleu2_score": bleu2_score,
                                 "rouge1_score": rouge1_score,
                                 "rouge2_score": rouge2_score,
+                                "result": predicted,
                                 "error": _error
                             }
                             self.append_result(eval_result)
@@ -205,6 +219,7 @@ class VegaLiteEvaluator_EX3A:
                                 "query": query,
                                 "actual": truth_str,
                                 "predicted": pred_str,
+                                "result": predicted,
                                 "error": "Error evaluating content" + str(e)
                                 }
                                 self.append_result(eval_result)
@@ -220,17 +235,32 @@ class VegaLiteEvaluator_EX3A:
                                 "query": query,
                                 "predicted": pred,
                                 "actual": truth,
+                                "result": predicted,
                                 "error": "Error parsing JSON" + str(e)
                                 }
                         self.append_result(eval_result)
                         print(f"Error parsing JSON: {str(e)}")
                         return False
-                except (SyntaxError, ValueError):
+                except (SyntaxError, ValueError) as e:
                     print("Invalid JSON in 'pred'")
-                    return False
+                    eval_result = {
+                          "datafile": dataFile,
+                          "query": query,
+                          "result": predicted,
+                          "error": "Error" + str(e)
+                      }
+                    self.append_result(eval_result)
+                    return self.results
         except (SyntaxError, ValueError):
             print("Invalid JSON")
-            return False
+            eval_result = {
+                  "datafile": dataFile,
+                  "query": query,
+                  "result": predicted,
+                  "error": "Error" + str(e)
+              }
+            self.append_result(eval_result)
+            return self.results
 
     def write_to_csv(self):
         # Ensure there are results to write
@@ -254,7 +284,7 @@ class VegaLiteEvaluator_EX3A:
 
     def run_evaluation(self, queries_df):
         for index, row in queries_df.iterrows():
-            # if index == 50:
+            # if index == 25:
             #     break
             query = row['Utterance Set']
             vlSpec_output = row['VegaLiteSpec']
