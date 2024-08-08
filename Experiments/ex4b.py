@@ -241,6 +241,7 @@ class VegaLiteEvaluator_EX4B:
                             "query": query,
                             "predicted": pred,
                             "actual": truth,
+                            "result": predicted,
                             "error": "Error parsing JSON" + str(e)
                             }
                     self.append_result(eval_result)

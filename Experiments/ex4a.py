@@ -79,7 +79,7 @@ Vega-lite Json: """
                 chain_type_kwargs={"prompt": self.VIS_CHAIN_PROMPT,"verbose":False,"memory": self.memory}
             )
             result = vis_chain({"query": input})
-            result = result["result"]
+            # result = result["result"]
             return result
         except(SyntaxError, ValueError) as e:
             print(f"Error in visQA chain func: {str(e)}")
@@ -92,21 +92,20 @@ Vega-lite Json: """
           if key not in result:
               result[key] = None
       self.results.append(result)
+
     def generate(self, query, dataFile, truth):
         pred_str = None
         truth_str =  None
         try:
             predicted = self.visQA_chain(dataFile,query)
             if predicted:
-                pred = predicted
+                pred = predicted['result']
 
                 try:
-                    truth = truth.replace('true', 'True')
                     truth_json = ast.literal_eval(truth)
                     truth_json['data'].clear()
                     truth_json['data']['url'] = self.data_url
                     truth_str = json.dumps(truth_json)
-                    truth_str = truth_str.replace('True', 'true')
                 except (SyntaxError, ValueError) as e:
                     print(f"Error parsing JSON: {str(e)}")
                     eval_result = {
@@ -114,6 +113,7 @@ Vega-lite Json: """
                         "query": query,
                         "actual": truth,
                         "predicted": pred,
+                        "result": predicted,
                         "error": "Error parsing Truth JSON:" + str(e)
                     }
                     self.append_result(eval_result)
@@ -124,7 +124,6 @@ Vega-lite Json: """
                     eval_result = None
                     _error = None
                     try:
-                        pred = pred.replace('true', 'True')
                         pred_json = json.loads(pred)
                         if 'data' in pred_json:
                             pred_json['data'].clear()
@@ -132,7 +131,6 @@ Vega-lite Json: """
                             pred_json['data'] = {}
                         pred_json['data']['url'] = self.data_url
                         pred_str = json.dumps(pred_json)
-                        pred_str = pred_str.replace('True', 'true')
 
 
                         jcomp = JSONComparator(pred_json, truth_json)
@@ -166,6 +164,7 @@ Vega-lite Json: """
                                 "query": query,
                                 "actual": truth_str,
                                 "predicted": pred_str,
+                                "result": predicted,
                                 "jcomp_score": jcomp_score,
                                 "bleu1_score": bleu1_score,
                                 "bleu2_score": bleu2_score,
@@ -196,6 +195,7 @@ Vega-lite Json: """
                                 "query": query,
                                 "actual": truth,
                                 "predicted": pred,
+                                "result": predicted,
                                 "error": "Error parsing JSON" + str(e)
                                 }
                         self.append_result(eval_result)
@@ -203,10 +203,24 @@ Vega-lite Json: """
                         return self.results
                 except (SyntaxError, ValueError):
                     print("Invalid JSON in 'pred'")
+                    eval_result = {
+                                "datafile": dataFile,
+                                "query": query,
+                                "result": predicted,
+                                "error": "Error" + str(e)
+                            }
+                    self.append_result(eval_result)
             else:
                 return False
         except (SyntaxError, ValueError):
             print("Invalid JSON")
+            eval_result = {
+                          "datafile": dataFile,
+                          "query": query,
+                          "result": predicted,
+                          "error": "Error" + str(e)
+                      }
+            self.append_result(eval_result)
             return False
 
     def write_to_csv(self):
