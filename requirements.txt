@@ -1,4 +1,4 @@
-vllm==0.4.0.post1
+vllm==0.5.4
 langchain-community==0.0.32
 langchain-core==0.1.42
 lm-format-enforcer==0.9.3
