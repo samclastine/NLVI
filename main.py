@@ -7,7 +7,7 @@ import os
 import config
 
 warnings.filterwarnings('ignore')
-nlvCorpus = pd.read_csv('/content/NLVI/eval_data/nlvCorpus_chunk1.csv')
+nlvCorpus = pd.read_csv('/content/NLVI/eval_data/nlvCorpus_150.csv')
 
 def setup_arg_parser():
     parser = argparse.ArgumentParser(description="Run experiments for data evaluation")

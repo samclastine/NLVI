@@ -8,3 +8,4 @@ langchain
 openai
 rouge-score
 faiss-gpu
+langchain-openai
