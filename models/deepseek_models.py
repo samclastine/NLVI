@@ -3,7 +3,7 @@ from langchain_openai import ChatOpenAI
 
 
 
-def initialize_openai_model(model_id, temperature):
+def initialize_deepseek_model(model_id, temperature):
 
     model = ChatOpenAI(
                 model=model_id,
