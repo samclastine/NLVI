@@ -143,119 +143,130 @@ class VegaLiteEvaluator_EX4B:
         truth_str =  None
         try:
             predicted = self.visQA_chain(dataFile,query)
-            pred = predicted["answer"]
 
-            try:
-                truth_json = ast.literal_eval(truth)
-                truth_json['data'].clear()
-                truth_json['data']['url'] = self.data_url
-                truth_str = json.dumps(truth_json)
-                truth_str = truth_str.replace('True', 'true')
-            except (SyntaxError, ValueError) as e:
-                print(f"Error parsing JSON: {str(e)}")
-                eval_result = {
-                    "datafile": dataFile,
-                    "query": query,
-                    "actual": truth_str,
-                    "predicted": pred,
-                    "result": predicted,
-                    "error": "Error parsing Truth JSON:" + str(e)
-                }
-                self.append_result(eval_result)
-                return self.results
+            if predicted:
+                pred = predicted["answer"]
 
-            # Ensure 'pred' and 'truth' are valid JSON strings
-            try:
-                eval_result = None
-                _error = None
                 try:
-                    pred_json = json.loads(pred)
-                    if 'data' in pred_json:
-                        pred_json['data'].clear()
-                    else:
-                        pred_json['data'] = {}
-                    pred_json['data']['url'] = self.data_url
-                    pred_str = json.dumps(pred_json)
-
-
-                    jcomp = JSONComparator(pred_json, truth_json)
-                    jcomp_score = jcomp.evaluate_json()
-                    bleu1_score = Bleu_1_score(pred_str, truth_str)
-                    bleu1_score = bleu1_score.evaluate_bleu()
-                    bleu2_score = bleu_2_score(pred_str, truth_str)
-                    bleu2_score = bleu2_score.evaluate_bleu()
-                    rouge1_score = rouge_1_score(pred_json, truth_json)
-                    rouge1_score = rouge1_score.evaluate_rouge()
-                    rouge2_score = rouge_2_score(pred_json, truth_json)
-                    rouge2_score = rouge2_score.evaluate_rouge()
-
-                    # eval_response = self.evaluator.run(query, dataFile, pred_str)
-
-                    # # Access the content
-                    # content = eval_response.choices[0].message.content
-
-                    # # Check the type of the content and handle it accordingly
-                    # if isinstance(content, str):
-                    try:
-                        # gptScore = ast.literal_eval(content)
-                        # if isinstance(gptScore, dict) and 'Score' in gptScore:
-                        #     gpt_score = gptScore['Score']
-                        # else:
-                        #     gpt_score = None  # or some other error handling
-
-                        # print("Evaluated Score:", gptScore)
-                        eval_result = {
-                            "datafile": dataFile,
-                            "query": query,
-                            "actual": truth_str,
-                            "predicted": pred_str,
-                            "jcomp_score": jcomp_score,
-                            "bleu1_score": bleu1_score,
-                            "bleu2_score": bleu2_score,
-                            "rouge1_score": rouge1_score,
-                            "rouge2_score": rouge2_score,
-                            "result": predicted,
-                            "error": _error
-                        }
-                        self.append_result(eval_result)
-                    except ValueError as e:
-                            eval_result = {
-                            "datafile": dataFile,
-                            "query": query,
-                            "actual": truth_str,
-                            "predicted": pred_str,
-                            "result": predicted,
-                            "error": "Error evaluating content" + str(e)
-                            }
-                            self.append_result(eval_result)
-                            print(f"Error evaluating content: {str(e)}")
-                            return self.results
-                    # else:
-                    #     # If content is not a string, handle the integer or other types as needed
-                    #     print(f"Content is not a string, but a {type(content).__name__}: {content}")
-
+                    truth_json = ast.literal_eval(truth)
+                    truth_json['data'].clear()
+                    truth_json['data']['url'] = self.data_url
+                    truth_str = json.dumps(truth_json)
+                    truth_str = truth_str.replace('True', 'true')
                 except (SyntaxError, ValueError) as e:
                     print(f"Error parsing JSON: {str(e)}")
                     eval_result = {
+                        "datafile": dataFile,
+                        "query": query,
+                        "actual": truth_str,
+                        "predicted": pred,
+                        "result": predicted,
+                        "error": "Error parsing Truth JSON:" + str(e)
+                    }
+                    self.append_result(eval_result)
+                    return self.results
+
+            # Ensure 'pred' and 'truth' are valid JSON strings
+                try:
+                    eval_result = None
+                    _error = None
+                    try:
+                        pred_json = json.loads(pred)
+                        if 'data' in pred_json:
+                            pred_json['data'].clear()
+                        else:
+                            pred_json['data'] = {}
+                        pred_json['data']['url'] = self.data_url
+                        pred_str = json.dumps(pred_json)
+
+
+                        jcomp = JSONComparator(pred_json, truth_json)
+                        jcomp_score = jcomp.evaluate_json()
+                        bleu1_score = Bleu_1_score(pred_str, truth_str)
+                        bleu1_score = bleu1_score.evaluate_bleu()
+                        bleu2_score = bleu_2_score(pred_str, truth_str)
+                        bleu2_score = bleu2_score.evaluate_bleu()
+                        rouge1_score = rouge_1_score(pred_json, truth_json)
+                        rouge1_score = rouge1_score.evaluate_rouge()
+                        rouge2_score = rouge_2_score(pred_json, truth_json)
+                        rouge2_score = rouge2_score.evaluate_rouge()
+
+                        # eval_response = self.evaluator.run(query, dataFile, pred_str)
+
+                        # # Access the content
+                        # content = eval_response.choices[0].message.content
+
+                        # # Check the type of the content and handle it accordingly
+                        # if isinstance(content, str):
+                        try:
+                            # gptScore = ast.literal_eval(content)
+                            # if isinstance(gptScore, dict) and 'Score' in gptScore:
+                            #     gpt_score = gptScore['Score']
+                            # else:
+                            #     gpt_score = None  # or some other error handling
+
+                            # print("Evaluated Score:", gptScore)
+                            eval_result = {
+                                "datafile": dataFile,
+                                "query": query,
+                                "actual": truth_str,
+                                "predicted": pred_str,
+                                "jcomp_score": jcomp_score,
+                                "bleu1_score": bleu1_score,
+                                "bleu2_score": bleu2_score,
+                                "rouge1_score": rouge1_score,
+                                "rouge2_score": rouge2_score,
+                                "result": predicted,
+                                "error": _error
+                            }
+                            self.append_result(eval_result)
+                        except ValueError as e:
+                                eval_result = {
+                                "datafile": dataFile,
+                                "query": query,
+                                "actual": truth_str,
+                                "predicted": pred_str,
+                                "result": predicted,
+                                "error": "Error evaluating content" + str(e)
+                                }
+                                self.append_result(eval_result)
+                                print(f"Error evaluating content: {str(e)}")
+                                return self.results
+                        # else:
+                        #     # If content is not a string, handle the integer or other types as needed
+                        #     print(f"Content is not a string, but a {type(content).__name__}: {content}")
+
+                    except (SyntaxError, ValueError) as e:
+                        print(f"Error parsing JSON: {str(e)}")
+                        eval_result = {
+                                "datafile": dataFile,
+                                "query": query,
+                                "predicted": pred,
+                                "actual": truth,
+                                "result": predicted,
+                                "error": "Error parsing JSON" + str(e)
+                                }
+                        self.append_result(eval_result)
+                        print(f"Error parsing JSON: {str(e)}")
+                        return self.results
+                except (SyntaxError, ValueError):
+                    print("Invalid JSON in 'pred'")
+                    eval_result = {
                             "datafile": dataFile,
                             "query": query,
-                            "predicted": pred,
-                            "actual": truth,
                             "result": predicted,
-                            "error": "Error parsing JSON" + str(e)
-                            }
+                            "error": "Error" + str(e)
+                        }
                     self.append_result(eval_result)
-                    print(f"Error parsing JSON: {str(e)}")
-                    return self.results
-            except (SyntaxError, ValueError):
-                print("Invalid JSON in 'pred'")
+            else:
                 eval_result = {
                           "datafile": dataFile,
                           "query": query,
                           "result": predicted,
-                          "error": "Error" + str(e)
+                          "error": "Error" 
                       }
                 self.append_result(eval_result)
+                return False
         except (SyntaxError, ValueError):
             print("Invalid JSON")
             eval_result = {
