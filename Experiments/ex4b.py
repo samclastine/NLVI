@@ -74,7 +74,7 @@ class VegaLiteEvaluator_EX4B:
             memory_key="chat_history",
             k=1,
             input_key='question',
-            output_key="answer",
+            output_key="cot_output",
             return_messages=True
         )
     def visQA_chain(self, dataFile, input):
@@ -111,7 +111,7 @@ class VegaLiteEvaluator_EX4B:
                 verbose= True,
                 output_key='answer',
                 )
-            overall_chain = SequentialChain(chains=[vis_cot_chain, vis_zero_chain], input_variables= ['question', 'chat_history'],output_variables=["cot_output","result"],  verbose=True)
+            overall_chain = SequentialChain(chains=[vis_cot_chain, vis_zero_chain], input_variables= ['question', 'chat_history'],output_variables=["cot_output","answer"],  verbose=True)
             result = overall_chain({"question": input,'chat_history':''})
             self.res = result
             return self.res
