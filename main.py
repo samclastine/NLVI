@@ -52,12 +52,12 @@ def run_experiment(exp_name, result_filename, model_id, mode, JsonEnforcer, lang
     if exp_name=='ex4a':
         if lang=='vegalite':
             logging.info(f"Running vegalite {exp_name} with model {model_id}")
-            evaluator = VegaLiteEvaluator_EX4A(model_id=model_id, output_filename=result_filename, mode=mode, JsonEnforcer= JsonEnforcer, language= lang)
+            evaluator = VegaLiteEvaluator_EX4A(model_id=model_id, output_filename=result_filename, mode=mode, JsonEnforcer= JsonEnforcer)
             result = evaluator.run_evaluation(nlvCorpus)
             print(result)
         if lang == 'python':
             logging.info(f"Running vegalite {exp_name} with model {model_id}")
-            evaluator = python_ex4a(model_id=model_id, output_filename=result_filename, mode=mode, JsonEnforcer= JsonEnforcer, language= lang)
+            evaluator = python_ex4a(model_id=model_id, output_filename=result_filename, mode=mode, JsonEnforcer= JsonEnforcer)
             result = evaluator.run_evaluation(nlvCorpus)
             print(result)
 
