@@ -35,7 +35,7 @@ import urllib.request
 from langchain_openai import OpenAIEmbeddings
 
 warnings.filterwarnings('ignore')
-from models import initialize_evllm, initialize_openai_model, initialize_vllm
+from models import initialize_evllm, initialize_openai_model, initialize_vllm, initialize_deepseek_model
 
 
 class python_ex4a:
@@ -47,8 +47,10 @@ class python_ex4a:
             self.llm = initialize_vllm(model_id=self.model_id, temperature=0.3)
         if self.mode == "hf" and JsonEnforcer == 'True':
             self.llm = initialize_evllm(model_id=self.model_id, temperature=0.3)
-        elif self.mode == "openai":
+        if self.mode == "openai":
             self.llm = initialize_openai_model(model_id=self.model_id, temperature=0.3)
+        if self.mode == "deepseek":
+            self.llm = initialize_deepseek_model(model_id=self.model_id, temperature=0.3)
         self.visualization_template = """/
                 Generate a python code for the given question.\
 
