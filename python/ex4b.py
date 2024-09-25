@@ -21,7 +21,8 @@ from langchain.memory import ConversationBufferWindowMemory
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.prompts import FewShotPromptTemplate, PromptTemplate
 
-
+from langchain.chains import ConversationalRetrievalChain
+from langchain.chains import SequentialChain
 
 import time
 
@@ -38,7 +39,7 @@ warnings.filterwarnings('ignore')
 from models import initialize_evllm, initialize_openai_model, initialize_vllm, initialize_deepseek_model
 
 
-class python_ex4a:
+class python_ex4b:
     def __init__(self, model_id, output_filename="/output.csv", mode="openai", JsonEnforcer= 'False'):
         self.model_id = model_id
         self.mode = mode
@@ -51,7 +52,7 @@ class python_ex4a:
             self.llm = initialize_openai_model(model_id=self.model_id, temperature=0.3)
         if self.mode == "deepseek":
             self.llm = initialize_deepseek_model(model_id=self.model_id, temperature=0.3)
-        self.visualization_template = """/
+        self.CoT_chain_template  = """/
                 Generate a python code for the given question.\
 
                 Note:
@@ -65,16 +66,33 @@ class python_ex4a:
                 Data:
                 {context}
                 Question: {question}
-                Python Code:"""
+                Lets Think Step by Step to generate specs of Vegalite v4 in JSON format:\n 
+
+              """
+        self.zero_shot_chain_template = """/
+                    Generate a python code for the given question. \n
+
+
+                    Data: \
+                    {context}
+                    Lets Think Step by Step: \n
+                    {cot_output}
+
+                    Python Code:
+                    
+                    """
+        self.cot_CHAIN_PROMPT = PromptTemplate(input_variables=[ 'question', 'chat_history', "context"], template= self.CoT_chain_template)
+        self.zero_CHAIN_PROMPT = PromptTemplate(input_variables=["cot_output","context"], template= self.zero_shot_chain_template)
 
 
 
 
 
         self.memory = ConversationBufferWindowMemory(
-            memory_key="history",
+            memory_key="chat_history",
             k=1,
             input_key='question',
+            output_key="cot_output",
             return_messages=True
         )
         self.results = []
@@ -97,16 +115,28 @@ class python_ex4a:
             embeddings = OpenAIEmbeddings(model= "text-embedding-3-small")
             csv_retriever = FAISS.from_documents(csv_docs, embeddings).as_retriever()
 
-            VIS_CHAIN_PROMPT = PromptTemplate(input_variables=["context", "question", "history"],partial_variables={"fileName":dataFile},template=self.visualization_template)
             
-            vis_chain = RetrievalQA.from_chain_type(
+            vis_cot_chain = ConversationalRetrievalChain.from_llm(
                 self.llm,
                 retriever=csv_retriever,
                 chain_type="stuff",
-                chain_type_kwargs={"prompt": VIS_CHAIN_PROMPT,"verbose":True,"memory": self.memory}
+                combine_docs_chain_kwargs={"prompt": self.cot_CHAIN_PROMPT},
+                output_key= "cot_output",
+                verbose= True,
+                memory=self.memory,
             )
-            result = vis_chain({"query": input})
-            data = result["result"]
+            vis_zero_chain = ConversationalRetrievalChain.from_llm(
+                self.llm,
+                retriever=csv_retriever,
+                chain_type="stuff",
+                combine_docs_chain_kwargs={"prompt": self.zero_CHAIN_PROMPT},
+                verbose= True,
+                output_key='answer',
+                )
+            overall_chain = SequentialChain(chains=[vis_cot_chain, vis_zero_chain], input_variables= ['question', 'chat_history'],output_variables=["cot_output","answer"],  verbose=True)
+            result = overall_chain({"question": input,'chat_history':''})
+            self.res = result
+            data = result["answer"]
             error='NAN'
             try:
                 pattern = r'```python(.*?)```'
@@ -119,10 +149,17 @@ class python_ex4a:
                 print(f"An error occurred: {str(e)}")
                 error=e
 
-            return {"data":data,"error":error}
+            return {"result":self.res,"error":error}
 
         except(SyntaxError, ValueError) as e:
             print(f"Error in visQA chain func: {str(e)}")
+            eval_result = {
+                  "datafile": dataFile,
+                  "query": input,
+                  "result": self.res,
+                  "error": "Error" + str(e)
+              }
+            self.append_result(eval_result)
 
 
     def append_result(self, result):
@@ -139,21 +176,43 @@ class python_ex4a:
 
     def generate(self, query,dataFile):
         try:
-            
-            predicted = self.visQA_chain(dataFile, query)
-            print("im here", predicted)
-            eval_result = {
-                    "datafile": dataFile,
-                    "query": query,
-                    "predicted": predicted["data"],
-                    "error": predicted["error"]
-                }
-            self.append_result(eval_result)
-            return predicted
+            predicted = self.visQA_chain(dataFile,query)
+
+            if predicted:
+                pred = predicted["result"]
+                try:
+                    eval_result = {
+                            "datafile": dataFile,
+                            "query": query,
+                            "predicted": predicted,
+                            "error": predicted["error"]
+                        }
+                    self.append_result(eval_result)
+                    return predicted
+                except Exception as e:
+                    print(f"Error parsing JSON: {str(e)}")
+                    eval_result = {
+                        "datafile": dataFile,
+                        "query": query,
+                        "predicted": pred['answer'],
+                        "result": predicted,
+                        "error": "Error parsing Truth JSON:" + str(e)
+                    }
+                    self.append_result(eval_result)
+                    return self.results
+
         except Exception as e:
-            errot=e
-            print(f"An error occurred: {str(e)}")
-            return "failed to generate"
+            print(f"failed to generate: {str(e)}")
+            eval_result = {
+                "datafile": dataFile,
+                "query": query,
+                "predicted": pred,
+                "result": predicted.result,
+                "error": "An error occurred:" + str(e)
+            }
+            self.append_result(eval_result)
+            return self.results
+
   
     def write_to_csv(self):
             # Ensure there are results to write
